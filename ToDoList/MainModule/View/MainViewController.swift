@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  MainViewController.swift
 //  ToDoList
 //
 //  Created by Владислав Головачев on 03.09.2024.
@@ -7,11 +7,14 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class MainViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .green
+        view.backgroundColor = .lightGray
     }
 }
 
+extension MainViewController: MainViewProtocol {
+    
+}
