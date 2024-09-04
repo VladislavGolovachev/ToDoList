@@ -17,6 +17,7 @@ protocol MainViewPresenterProtocol: AnyObject {
 
 final class MainPresenter: MainViewPresenterProtocol {
     let a = 2
+    var b = "asd"
 }
 
 extension MainPresenter: MainInteractorOutputProtocol {
