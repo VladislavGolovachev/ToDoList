@@ -16,7 +16,7 @@ protocol MainViewPresenterProtocol: AnyObject {
 }
 
 final class MainPresenter: MainViewPresenterProtocol {
-    
+    let a = 2
 }
 
 extension MainPresenter: MainInteractorOutputProtocol {
