@@ -9,38 +9,107 @@ import UIKit
 
 class MainViewController: UIViewController {
     //MARK: Properties
-    lazy var tableView: UITableView = {
+    let tableView = {
         let tableView = UITableView(frame: CGRectZero, style: .plain)
         tableView.register(ToDoTableViewCell.self,
                            forCellReuseIdentifier: ToDoTableViewCell.reuseIdentifier)
         
-        tableView.backgroundColor = MainViewConstants.Color.background
+        tableView.backgroundColor = MainViewConstants.backgroundColor
         tableView.separatorStyle = .none
         
         return tableView
+    }()
+    let nameLabel = {
+        let label = UILabel()
+        label.text = "Tasks"
+//        label.font = MainViewConstants.Font.primary
+//        label.textColor = MainViewConstants.Color.Text.primary
+        
+        return label
+    }()
+    let dateLabel = {
+        let label = UILabel()
+        label.text = "Wednesday, 11 May"
+//        label.font = MainViewConstants.Font.secondary
+//        label.textColor = MainViewConstants.Color.Text.secondary
+        
+        return label
+    }()
+    let segmentedControl = {
+        let control = UISegmentedControl()
+        
+        let titles = ["All", "Open", "Closed"]
+        for (index, title) in titles.enumerated() {
+            control.insertSegment(withTitle: title, at: index, animated: false)
+            control.setWidth(100, forSegmentAt: index)
+        }
+        
+        control.selectedSegmentIndex = 0
+        control.selectedSegmentTintColor = .blue
+        
+        return control
+    }()
+    let newTaskButton = {
+        let button = UIButton(type: .custom)
+        
+        button.layer.cornerRadius = 10
+        button.backgroundColor =  .lightGray
+        button.setTitle("New Task", for: .normal)
+        button.setTitleColor(.blue, for: .normal)
+        button.setImage(UIImage(systemName: "plus"), for: .normal)
+        
+        return button
     }()
     
     //MARK: ViewController LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = MainViewConstants.Color.background
+        view.backgroundColor = MainViewConstants.backgroundColor
         
         tableView.dataSource = self
         tableView.delegate = self
         
-        view.addSubview(tableView)
+        addSubviews()
         setupConstraints()
     }
 }
 
 //MARK: Private Functions
 extension MainViewController {
+    private func addSubviews() {
+        view.addSubview(nameLabel)
+        view.addSubview(dateLabel)
+        view.addSubview(segmentedControl)
+        view.addSubview(newTaskButton)
+        view.addSubview(tableView)
+    }
+    
     private func setupConstraints() {
-        let safeArea = view.safeAreaLayoutGuide
+        view.subviews.forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+        }
         
-        tableView.translatesAutoresizingMaskIntoConstraints = false
+        let safeArea = view.safeAreaLayoutGuide
+        let padding = MainViewConstants.padding
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: safeArea.topAnchor),
+            nameLabel.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: padding),
+            nameLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
+            nameLabel.trailingAnchor.constraint(equalTo: newTaskButton.leadingAnchor),
+            
+            dateLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 5),
+            dateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
+            dateLabel.trailingAnchor.constraint(equalTo: newTaskButton.leadingAnchor),
+            
+            newTaskButton.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: padding),
+            newTaskButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -padding),
+            newTaskButton.widthAnchor.constraint(equalToConstant: 100),
+            newTaskButton.heightAnchor.constraint(equalToConstant: 50),
+            
+            segmentedControl.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: 30),
+            segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
+            segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -padding),
+            
+            tableView.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, constant: 20),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
