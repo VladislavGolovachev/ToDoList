@@ -15,6 +15,9 @@
 		820E5C972C875E6F005FD12B /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 820E5C962C875E6F005FD12B /* .gitignore */; };
 		820E5C9E2C87614E005FD12B /* MainPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820E5C9D2C87614E005FD12B /* MainPresenter.swift */; };
 		820E5CA02C876159005FD12B /* MainInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820E5C9F2C876158005FD12B /* MainInteractor.swift */; };
+		820E5CA42C87AAB0005FD12B /* ToDoTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820E5CA32C87AAB0005FD12B /* ToDoTableViewCell.swift */; };
+		820E5CA72C87AB0B005FD12B /* MainViewConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820E5CA62C87AB0B005FD12B /* MainViewConstants.swift */; };
+		826949542C8A108F0093719A /* ButtonWithExpandedHitbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826949532C8A108F0093719A /* ButtonWithExpandedHitbox.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +31,9 @@
 		820E5C962C875E6F005FD12B /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		820E5C9D2C87614E005FD12B /* MainPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainPresenter.swift; sourceTree = "<group>"; };
 		820E5C9F2C876158005FD12B /* MainInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainInteractor.swift; sourceTree = "<group>"; };
+		820E5CA32C87AAB0005FD12B /* ToDoTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoTableViewCell.swift; sourceTree = "<group>"; };
+		820E5CA62C87AB0B005FD12B /* MainViewConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewConstants.swift; sourceTree = "<group>"; };
+		826949532C8A108F0093719A /* ButtonWithExpandedHitbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonWithExpandedHitbox.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +70,7 @@
 				820E5C822C875DF9005FD12B /* AppDelegate.swift */,
 				820E5C842C875DF9005FD12B /* SceneDelegate.swift */,
 				820E5C982C8760C9005FD12B /* MainModule */,
+				827014B72C88B3CE000996C8 /* Utils */,
 				820E5C8B2C875DFC005FD12B /* Assets.xcassets */,
 				820E5C8D2C875DFC005FD12B /* LaunchScreen.storyboard */,
 				820E5C902C875DFC005FD12B /* Info.plist */,
@@ -85,6 +92,7 @@
 		820E5C992C8760D4005FD12B /* View */ = {
 			isa = PBXGroup;
 			children = (
+				820E5CA32C87AAB0005FD12B /* ToDoTableViewCell.swift */,
 				820E5C862C875DF9005FD12B /* MainViewController.swift */,
 			);
 			path = View;
@@ -111,6 +119,33 @@
 			children = (
 			);
 			path = Entity;
+			sourceTree = "<group>";
+		};
+		820E5CA52C87AAF2005FD12B /* Constants */ = {
+			isa = PBXGroup;
+			children = (
+				820E5CA62C87AB0B005FD12B /* MainViewConstants.swift */,
+			);
+			name = Constants;
+			path = ..;
+			sourceTree = "<group>";
+		};
+		827014B72C88B3CE000996C8 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				827014B82C88B3FD000996C8 /* CustomClasses */,
+				820E5CA52C87AAF2005FD12B /* Constants */,
+			);
+			name = Utils;
+			path = Constants/Utils;
+			sourceTree = "<group>";
+		};
+		827014B82C88B3FD000996C8 /* CustomClasses */ = {
+			isa = PBXGroup;
+			children = (
+				826949532C8A108F0093719A /* ButtonWithExpandedHitbox.swift */,
+			);
+			path = CustomClasses;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -184,8 +219,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				826949542C8A108F0093719A /* ButtonWithExpandedHitbox.swift in Sources */,
 				820E5C872C875DF9005FD12B /* MainViewController.swift in Sources */,
 				820E5C832C875DF9005FD12B /* AppDelegate.swift in Sources */,
+				820E5CA72C87AB0B005FD12B /* MainViewConstants.swift in Sources */,
+				820E5CA42C87AAB0005FD12B /* ToDoTableViewCell.swift in Sources */,
 				820E5C852C875DF9005FD12B /* SceneDelegate.swift in Sources */,
 				820E5CA02C876159005FD12B /* MainInteractor.swift in Sources */,
 				820E5C9E2C87614E005FD12B /* MainPresenter.swift in Sources */,
