@@ -72,7 +72,7 @@ final class ToDoTableViewCell: UITableViewCell {
     }()
     let timeLabel = {
         let label = UILabel()
-        label.text = "10:00PM-11:45PM"
+        label.text = "10:00PM"
         
         label.font = FontConstants.time
         label.textColor = ColorConstants.Text.time

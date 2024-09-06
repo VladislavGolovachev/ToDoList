@@ -7,39 +7,8 @@
 
 import UIKit
 
-class MainViewController: UIViewController {
+final class MainViewController: UIViewController {
     //MARK: Properties
-    let lbl1 = {
-        let label = UILabel()
-        label.backgroundColor = ColorConstants.interactiveTheme
-        label.text = "25"
-        label.textColor = .white
-        label.font = label.font.withSize(12)
-        label.layer.cornerRadius = 15
-        
-        return label
-    }()
-    let lbl2 = {
-        let label = UILabel()
-        label.backgroundColor = ColorConstants.interactiveTheme
-        label.text = "13"
-        label.textColor = .white
-        label.font = label.font.withSize(12)
-        label.layer.cornerRadius = 15
-        
-        return label
-    }()
-    let lbl3 = {
-        let label = UILabel()
-        label.backgroundColor = ColorConstants.interactiveTheme
-        label.text = "12"
-        label.textColor = .white
-        label.font = label.font.withSize(12)
-        label.layer.cornerRadius = 15
-        
-        return label
-    }()
-    
     let tableView = {
         let tableView = UITableView(frame: CGRectZero, style: .plain)
         tableView.register(ToDoTableViewCell.self,
@@ -66,66 +35,17 @@ class MainViewController: UIViewController {
         
         return label
     }()
-    let segmentedControl = {
-        let control = UISegmentedControl()
-        control.backgroundColor = MainViewConstants.backgroundColor
-        
-        let string = "All"
-        let titles = [string, "Opened", "Closed"]
-        for (index, title) in titles.enumerated() {
-            control.insertSegment(withTitle: title, at: index, animated: false)
-            control.setWidth(100, forSegmentAt: index)
-        }
-        let segmentWidth = 60.0
-        control.setWidth(segmentWidth, forSegmentAt: 0)
-        let titleWidth = string.size(withAttributes: control.titleTextAttributes(for: .normal)).width
-        let offset = -CGFloat(Int((segmentWidth - titleWidth) / 2)) + 5
-        
-        control.setContentPositionAdjustment(UIOffset(horizontal: offset, vertical: 0), forSegmentType: .left, barMetrics: .default)
-        
-        control.setTitleTextAttributes([.foregroundColor: ColorConstants.interactiveTheme],
-                                       for: .selected)
-        control.setTitleTextAttributes([.foregroundColor: ColorConstants.Text.date],
-                                       for: .normal)
-        
-        
-        let size = CGSize(width: 1, height: 20)
-        let rect = CGRect(origin: CGPointZero, size: size)
-        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
-        MainViewConstants.backgroundColor.setFill()
-        UIRectFill(rect)
-        let blankImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        let sizet = CGSize(width: 3, height: 20)
-        let rectt = CGRect(origin: CGPointZero, size: sizet)
-        UIGraphicsBeginImageContextWithOptions(sizet, false, 0.0)
-        ColorConstants.Text.date.withAlphaComponent(0.4).setFill()
-        UIRectFill(rectt)
-        let separatorImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        control.setBackgroundImage(blankImage, for: .normal, barMetrics: .default)
-        control.setDividerImage(blankImage, forLeftSegmentState: .normal, rightSegmentState: .normal, barMetrics: .default)
-        control.setDividerImage(separatorImage, forLeftSegmentState: .selected, rightSegmentState: .normal, barMetrics: .default)
-        control.setDividerImage(separatorImage, forLeftSegmentState: .normal, rightSegmentState: .selected, barMetrics: .default)
-        control.setDividerImage(separatorImage, forLeftSegmentState: .selected, rightSegmentState: .highlighted, barMetrics: .default)
-        control.setDividerImage(separatorImage, forLeftSegmentState: .highlighted, rightSegmentState: .selected, barMetrics: .default)
-        control.selectedSegmentIndex = 0
-        control.selectedSegmentTintColor = MainViewConstants.backgroundColor
-        
-        return control
-    }()
+    let segmentedControl = CustomSegmentedControl()
     let newTaskButton = {
         let button = UIButton(type: .custom)
-        button.backgroundColor =  ColorConstants.button
+        button.backgroundColor =  ColorConstants.buttonBackground
         button.layer.cornerRadius = ButtonConstants.cornerRadius
         
         button.setImage(UIImage(named: ButtonConstants.imageName), for: .normal)
         
         var config = UIButton.Configuration.plain()
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: FontConstants.button,
+            .font: FontConstants.buttonTitle,
             .foregroundColor: ColorConstants.interactiveTheme
         ]
         config.attributedTitle = AttributedString("New Task", attributes: AttributeContainer(attributes))
@@ -140,31 +60,40 @@ class MainViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = MainViewConstants.backgroundColor
         
+        segmentedControl.addTarget(self, action: #selector(segmentedControlAction(_:)), for: .valueChanged)
+        newTaskButton.addTarget(self, action: #selector(newTaskButtonAction2(_:)), for: .touchUpInside)
+        newTaskButton.addTarget(self, action: #selector(newTaskButtonAction(_:)), for: .touchDown)
+        
         tableView.dataSource = self
         tableView.delegate = self
         
         addSubviews()
         setupConstraints()
-        
-        
-//        segmentedControl.addSubview(lbl1)
-//        segmentedControl.addSubview(lbl2)
-//        segmentedControl.addSubview(lbl3)
-//        
-//        lbl1.translatesAutoresizingMaskIntoConstraints = false
-//        lbl2.translatesAutoresizingMaskIntoConstraints = false
-//        lbl3.translatesAutoresizingMaskIntoConstraints = false
-//        
-//        NSLayoutConstraint.activate([
-//            lbl1.centerXAnchor.constraint(equalTo: segmentedControl.leadingAnchor, constant: 60),
-//            lbl1.centerYAnchor.constraint(equalTo: segmentedControl.centerYAnchor),
-//            
-//            lbl2.centerXAnchor.constraint(equalTo: segmentedControl.centerXAnchor, constant: 25),
-//            lbl2.centerYAnchor.constraint(equalTo: segmentedControl.centerYAnchor),
-//            
-//            lbl3.centerXAnchor.constraint(equalTo: segmentedControl.trailingAnchor, constant: -13),
-//            lbl3.centerYAnchor.constraint(equalTo: segmentedControl.centerYAnchor),
-//        ])
+    }
+}
+
+//MARK: Actions
+extension MainViewController {
+    @objc private func segmentedControlAction(_ control: CustomSegmentedControl) {
+        let array = ["1", "20", "99+"]
+        control.setRemindersAmount(array[Int.random(in: 0...2999) / 1000],
+                                   forSegment: control.selectedSegmentIndex)
+    }
+    
+    @objc private func newTaskButtonAction2(_ button: UIButton) {
+        print("Button tapped")
+    }
+    
+    @objc private func newTaskButtonAction(_ button: UIButton) {
+        UIView.animate(withDuration: 0.1) {
+            button.backgroundColor = ColorConstants.buttonBackground.withAlphaComponent(0.3)
+            button.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
+        } completion: { _ in
+            UIView.animate(withDuration: 0.1) {
+                button.backgroundColor = ColorConstants.buttonBackground
+                button.transform = CGAffineTransform(scaleX: 1, y: 1)
+            }
+        }
     }
 }
 
@@ -205,8 +134,7 @@ extension MainViewController {
             segmentedControl.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, 
                                                   constant: ViewConstants.Spacing.common),
             segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
-//            segmentedControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            segmentedControl.heightAnchor.constraint(equalToConstant: 30),
+            segmentedControl.heightAnchor.constraint(equalToConstant: 20),
             
             tableView.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, 
                                            constant: ViewConstants.Spacing.common),
@@ -268,7 +196,7 @@ extension MainViewController {
     
     private enum ColorConstants {
         static let interactiveTheme = UIColor.systemBlue
-        static let button = UIColor.systemBlue.withAlphaComponent(0.1)
+        static let buttonBackground = UIColor.systemBlue.withAlphaComponent(0.1)
         
         enum Text {
             static let title = UIColor.black
@@ -279,7 +207,7 @@ extension MainViewController {
     private enum FontConstants {
         static let title = UIFont.systemFont(ofSize: 28.0, weight: .bold)
         static let date = UIFont.systemFont(ofSize: 14.0, weight: .medium)
-        static let button = UIFont.systemFont(ofSize: 14.0, weight: .semibold)
+        static let buttonTitle = UIFont.systemFont(ofSize: 14.0, weight: .semibold)
     }
     
     private enum ButtonConstants {
