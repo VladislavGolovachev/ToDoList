@@ -81,7 +81,7 @@ final class ToDoTableViewCell: UITableViewCell {
     }()
     let checkboxButton = {
         let button = ButtonWithExpandedHitbox(type: .custom)
-        let name = CheckboxConstants.Name.unchecked
+        let name = CheckboxConstants.ImageName.unchecked
         let circleImage = UIImage(named: name)
         
         button.setImage(circleImage, for: .normal)
@@ -119,9 +119,9 @@ extension ToDoTableViewCell {
     @objc private func action(_ sender: UIButton) {
         var name: String
         if checkboxButton.tag == 0 {
-            name = CheckboxConstants.Name.checked
+            name = CheckboxConstants.ImageName.checked
         } else {
-            name = CheckboxConstants.Name.unchecked
+            name = CheckboxConstants.ImageName.unchecked
         }
         checkboxButton.tag = 1 - checkboxButton.tag
         
@@ -241,7 +241,7 @@ extension ToDoTableViewCell {
     }
     
     private enum CheckboxConstants {
-        enum Name {
+        enum ImageName {
             static let checked = "CheckedCheckbox"
             static let unchecked = "UncheckedCheckbox"
         }
