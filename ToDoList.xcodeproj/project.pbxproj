@@ -13,6 +13,8 @@
 		820187A92C8C552D00D2610E /* TodoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820187A82C8C552D00D2610E /* TodoManager.swift */; };
 		820187AB2C8D0E0400D2610E /* StorageError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820187AA2C8D0E0400D2610E /* StorageError.swift */; };
 		820187B22C8D119000D2610E /* CoreDataStorageProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820187B12C8D119000D2610E /* CoreDataStorageProtocols.swift */; };
+		820187B92C8D1DAE00D2610E /* Todo+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820187B72C8D1DAE00D2610E /* Todo+CoreDataClass.swift */; };
+		820187BA2C8D1DAE00D2610E /* Todo+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820187B82C8D1DAE00D2610E /* Todo+CoreDataProperties.swift */; };
 		820E5C832C875DF9005FD12B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820E5C822C875DF9005FD12B /* AppDelegate.swift */; };
 		820E5C852C875DF9005FD12B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820E5C842C875DF9005FD12B /* SceneDelegate.swift */; };
 		820E5C872C875DF9005FD12B /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820E5C862C875DF9005FD12B /* MainViewController.swift */; };
@@ -42,6 +44,8 @@
 		820187A82C8C552D00D2610E /* TodoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoManager.swift; sourceTree = "<group>"; };
 		820187AA2C8D0E0400D2610E /* StorageError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageError.swift; sourceTree = "<group>"; };
 		820187B12C8D119000D2610E /* CoreDataStorageProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStorageProtocols.swift; sourceTree = "<group>"; };
+		820187B72C8D1DAE00D2610E /* Todo+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Todo+CoreDataClass.swift"; sourceTree = "<group>"; };
+		820187B82C8D1DAE00D2610E /* Todo+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Todo+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		820E5C7F2C875DF9005FD12B /* ToDoList.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ToDoList.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		820E5C822C875DF9005FD12B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		820E5C842C875DF9005FD12B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -195,6 +199,8 @@
 		820E5C9C2C8760E8005FD12B /* Entity */ = {
 			isa = PBXGroup;
 			children = (
+				820187B72C8D1DAE00D2610E /* Todo+CoreDataClass.swift */,
+				820187B82C8D1DAE00D2610E /* Todo+CoreDataProperties.swift */,
 			);
 			path = Entity;
 			sourceTree = "<group>";
@@ -350,6 +356,8 @@
 				826949542C8A108F0093719A /* ButtonWithExpandedHitbox.swift in Sources */,
 				820E5C872C875DF9005FD12B /* MainViewController.swift in Sources */,
 				820E5C832C875DF9005FD12B /* AppDelegate.swift in Sources */,
+				820187B92C8D1DAE00D2610E /* Todo+CoreDataClass.swift in Sources */,
+				820187BA2C8D1DAE00D2610E /* Todo+CoreDataProperties.swift in Sources */,
 				821B41262C8B15AF0094213E /* CustomSegmentedControl.swift in Sources */,
 				820187B22C8D119000D2610E /* CoreDataStorageProtocols.swift in Sources */,
 				821B41292C8B1E4E0094213E /* UIImageExtension.swift in Sources */,

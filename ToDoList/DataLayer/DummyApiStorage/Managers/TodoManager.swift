@@ -11,14 +11,14 @@ import CoreData
 final class TodoManager<ObjectType: Todo, KeyType>: DummyApiStorage,
                                                     CoreDataStorageManager {
     func fetch(for key: KeyType) -> Todo {
-        <#code#>
+        return Todo()
     }
     
     func update(for key: KeyType, with object: Todo) {
-        <#code#>
+        
     }
     
     func delete(for key: KeyType) {
-        <#code#>
+        
     }
 }
