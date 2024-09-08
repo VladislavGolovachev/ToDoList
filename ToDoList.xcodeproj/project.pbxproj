@@ -10,10 +10,8 @@
 		820187A22C8C47A300D2610E /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820187A12C8C47A300D2610E /* DataManager.swift */; };
 		820187AB2C8D0E0400D2610E /* StorageError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820187AA2C8D0E0400D2610E /* StorageError.swift */; };
 		820187B22C8D119000D2610E /* CoreDataStorageProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820187B12C8D119000D2610E /* CoreDataStorageProtocols.swift */; };
-		820187C52C8D22F100D2610E /* Todo+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820187C32C8D22F100D2610E /* Todo+CoreDataClass.swift */; };
-		820187C62C8D22F100D2610E /* Todo+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820187C42C8D22F100D2610E /* Todo+CoreDataProperties.swift */; };
 		820187CD2C8D265900D2610E /* DummyApiDataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 820187C82C8D265900D2610E /* DummyApiDataModel.xcdatamodeld */; };
-		820187CE2C8D265900D2610E /* DummyApiManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820187C92C8D265900D2610E /* DummyApiManager.swift */; };
+		820187CE2C8D265900D2610E /* TodoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820187C92C8D265900D2610E /* TodoManager.swift */; };
 		820187CF2C8D265900D2610E /* DummyApiStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820187CA2C8D265900D2610E /* DummyApiStorage.swift */; };
 		820E5C832C875DF9005FD12B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820E5C822C875DF9005FD12B /* AppDelegate.swift */; };
 		820E5C852C875DF9005FD12B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820E5C842C875DF9005FD12B /* SceneDelegate.swift */; };
@@ -29,6 +27,8 @@
 		821B41262C8B15AF0094213E /* CustomSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 821B41252C8B15AF0094213E /* CustomSegmentedControl.swift */; };
 		821B41292C8B1E4E0094213E /* UIImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 821B41282C8B1E4E0094213E /* UIImageExtension.swift */; };
 		826949542C8A108F0093719A /* ButtonWithExpandedHitbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826949532C8A108F0093719A /* ButtonWithExpandedHitbox.swift */; };
+		82833A122C8E15B500D60384 /* TodoEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82833A102C8E15B500D60384 /* TodoEntity+CoreDataClass.swift */; };
+		82833A132C8E15B500D60384 /* TodoEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82833A112C8E15B500D60384 /* TodoEntity+CoreDataProperties.swift */; };
 		82B1B5952C8BAEFE008AB69C /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82B1B5942C8BAEFE008AB69C /* NetworkManager.swift */; };
 		82B1B5972C8BAFC5008AB69C /* NetworkRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82B1B5962C8BAFC5008AB69C /* NetworkRouter.swift */; };
 		82B1B5992C8BB055008AB69C /* EndPointType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82B1B5982C8BB055008AB69C /* EndPointType.swift */; };
@@ -41,9 +41,7 @@
 		820187A12C8C47A300D2610E /* DataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
 		820187AA2C8D0E0400D2610E /* StorageError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageError.swift; sourceTree = "<group>"; };
 		820187B12C8D119000D2610E /* CoreDataStorageProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStorageProtocols.swift; sourceTree = "<group>"; };
-		820187C32C8D22F100D2610E /* Todo+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Todo+CoreDataClass.swift"; sourceTree = "<group>"; };
-		820187C42C8D22F100D2610E /* Todo+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Todo+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		820187C92C8D265900D2610E /* DummyApiManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DummyApiManager.swift; sourceTree = "<group>"; };
+		820187C92C8D265900D2610E /* TodoManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TodoManager.swift; sourceTree = "<group>"; };
 		820187CA2C8D265900D2610E /* DummyApiStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DummyApiStorage.swift; sourceTree = "<group>"; };
 		820187CC2C8D265900D2610E /* DummyApiDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DummyApiDataModel.xcdatamodel; sourceTree = "<group>"; };
 		820E5C7F2C875DF9005FD12B /* ToDoList.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ToDoList.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -62,6 +60,8 @@
 		821B41252C8B15AF0094213E /* CustomSegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSegmentedControl.swift; sourceTree = "<group>"; };
 		821B41282C8B1E4E0094213E /* UIImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtension.swift; sourceTree = "<group>"; };
 		826949532C8A108F0093719A /* ButtonWithExpandedHitbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonWithExpandedHitbox.swift; sourceTree = "<group>"; };
+		82833A102C8E15B500D60384 /* TodoEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TodoEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		82833A112C8E15B500D60384 /* TodoEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TodoEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		82B1B5942C8BAEFE008AB69C /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		82B1B5962C8BAFC5008AB69C /* NetworkRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkRouter.swift; sourceTree = "<group>"; };
 		82B1B5982C8BB055008AB69C /* EndPointType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndPointType.swift; sourceTree = "<group>"; };
@@ -95,10 +95,18 @@
 			isa = PBXGroup;
 			children = (
 				820187CA2C8D265900D2610E /* DummyApiStorage.swift */,
-				820187C92C8D265900D2610E /* DummyApiManager.swift */,
 				820187C82C8D265900D2610E /* DummyApiDataModel.xcdatamodeld */,
+				820187D02C8D329C00D2610E /* StorageManagers */,
 			);
 			path = DummyApi;
+			sourceTree = "<group>";
+		};
+		820187D02C8D329C00D2610E /* StorageManagers */ = {
+			isa = PBXGroup;
+			children = (
+				820187C92C8D265900D2610E /* TodoManager.swift */,
+			);
+			path = StorageManagers;
 			sourceTree = "<group>";
 		};
 		820E5C762C875DF9005FD12B = {
@@ -175,8 +183,8 @@
 		820E5C9C2C8760E8005FD12B /* Entity */ = {
 			isa = PBXGroup;
 			children = (
-				820187C32C8D22F100D2610E /* Todo+CoreDataClass.swift */,
-				820187C42C8D22F100D2610E /* Todo+CoreDataProperties.swift */,
+				82833A102C8E15B500D60384 /* TodoEntity+CoreDataClass.swift */,
+				82833A112C8E15B500D60384 /* TodoEntity+CoreDataProperties.swift */,
 			);
 			path = Entity;
 			sourceTree = "<group>";
@@ -330,6 +338,8 @@
 				82B1B59D2C8BCE91008AB69C /* NetworkError.swift in Sources */,
 				826949542C8A108F0093719A /* ButtonWithExpandedHitbox.swift in Sources */,
 				820E5C872C875DF9005FD12B /* MainViewController.swift in Sources */,
+				82833A122C8E15B500D60384 /* TodoEntity+CoreDataClass.swift in Sources */,
+				82833A132C8E15B500D60384 /* TodoEntity+CoreDataProperties.swift in Sources */,
 				820E5C832C875DF9005FD12B /* AppDelegate.swift in Sources */,
 				821B41262C8B15AF0094213E /* CustomSegmentedControl.swift in Sources */,
 				820187B22C8D119000D2610E /* CoreDataStorageProtocols.swift in Sources */,
@@ -337,12 +347,10 @@
 				820187A22C8C47A300D2610E /* DataManager.swift in Sources */,
 				82B1B5992C8BB055008AB69C /* EndPointType.swift in Sources */,
 				820E5CA72C87AB0B005FD12B /* MainViewConstants.swift in Sources */,
-				820187C52C8D22F100D2610E /* Todo+CoreDataClass.swift in Sources */,
-				820187C62C8D22F100D2610E /* Todo+CoreDataProperties.swift in Sources */,
 				820187CD2C8D265900D2610E /* DummyApiDataModel.xcdatamodeld in Sources */,
 				820187AB2C8D0E0400D2610E /* StorageError.swift in Sources */,
 				820E5CA42C87AAB0005FD12B /* ToDoTableViewCell.swift in Sources */,
-				820187CE2C8D265900D2610E /* DummyApiManager.swift in Sources */,
+				820187CE2C8D265900D2610E /* TodoManager.swift in Sources */,
 				82B1B59B2C8BB462008AB69C /* DummyApiEndPoint.swift in Sources */,
 				82B1B5972C8BAFC5008AB69C /* NetworkRouter.swift in Sources */,
 				820E5C852C875DF9005FD12B /* SceneDelegate.swift in Sources */,

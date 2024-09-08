@@ -8,12 +8,17 @@
 import Foundation
 import CoreData
 
-class DummyApiStorage: CoreDataStorage {
+final class DummyApiStorage: CoreDataStorage {
+    private var _loadingError: StorageError?
+    var loadingError: StorageError? {
+        return _loadingError
+    }
+    
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "DummyApiDataModel")
-        container.loadPersistentStores { _, error in
+        container.loadPersistentStores { [weak self] _, error in
             if let error {
-                fatalError("Unable to load persistent stores: \(error)")
+                self?._loadingError = .unableToLoadData
             }
         }
         
