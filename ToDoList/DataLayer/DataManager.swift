@@ -12,5 +12,5 @@ protocol DataManagerProtocol {
 }
 
 final class DataManager: DataManagerProtocol {
-    
+    private let todoManager = DummyApiManager<Todo, Int>()
 }

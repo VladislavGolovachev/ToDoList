@@ -17,7 +17,7 @@ protocol CoreDataStorageManager {
     associatedtype ObjectType = NSManagedObject
     associatedtype KeyType
     
-    func fetch(for key: KeyType) -> Todo
-    func update(for key: KeyType, with object: Todo)
+    func fetch(for key: KeyType) -> ObjectType
+    func update(for key: KeyType, with object: ObjectType)
     func delete(for key: KeyType)
 }
