@@ -165,7 +165,7 @@ extension CustomSegmentedControl {
 extension CustomSegmentedControl {
     private enum SegmentConstants {
         static let names = ["All", "Opened", "Closed"]
-        static let selectedIndex = 1
+        static let selectedIndex = 0
         
         static let width: [Double] = [60, 110, 110]
         static let offset: [Double] = [-20, -10, -15]

@@ -9,6 +9,7 @@ import UIKit
 
 final class MainViewController: UIViewController {
     //MARK: Properties
+    var presenter: MainViewPresenterProtocol?
     let tableView = {
         let tableView = UITableView(frame: CGRectZero, style: .plain)
         tableView.register(ToDoTableViewCell.self,
