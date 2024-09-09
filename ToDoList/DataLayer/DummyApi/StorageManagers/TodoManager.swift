@@ -25,12 +25,14 @@ final class TodoManager: CoreDataStorageManager {
         }
         
         try storage.backgroundContext.performAndWait { [weak self] in
-            guard let notOptionalSelf = self,
+            guard let context = self?.storage.backgroundContext,
                   let entity = NSEntityDescription.entity(forEntityName: "TodoEntity",
-                                                          in: notOptionalSelf.storage.backgroundContext) else {return}
-            entity.setValuesForKeys(keyedValues)
+                                                          in: context) else {return}
             
-            try self?.saveContext()
+            let object = NSManagedObject(entity: entity, insertInto: context)
+            object.setValuesForKeys(keyedValues)
+            
+//            try self?.saveContext()
         }
     }
     
@@ -39,7 +41,7 @@ final class TodoManager: CoreDataStorageManager {
             let todo = try self?.fetch(for: index)
             todo?.setValuesForKeys(keyedValues)
             
-            try self?.saveContext()
+//            try self?.saveContext()
         }
     }
     
@@ -48,7 +50,7 @@ final class TodoManager: CoreDataStorageManager {
             if let todo = try self?.fetch(for: index) {
                 self?.storage.backgroundContext.delete(todo)
                 
-                try self?.saveContext()
+//                try self?.saveContext()
             }
         }
     }
@@ -82,7 +84,8 @@ extension TodoManager {
     }
     
     private func request() -> NSFetchRequest<TodoEntity> {
-        let sortDescriptor = NSSortDescriptor(key: "date", ascending: false)
+        let sortDescriptor = NSSortDescriptor(key: TodoKeys.date.rawValue,
+                                              ascending: false)
         
         let request = TodoEntity.fetchRequest()
         request.sortDescriptors = [sortDescriptor]

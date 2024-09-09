@@ -21,6 +21,7 @@ final class DataManager: DataManagerProtocol {
     private let todoManager = TodoManager()
     
     var isFirstLaunch: Bool {
+        return true
         let key = UserDefaultsKeys.isNotFirstLaunch.rawValue
         let isNotFirstLaunch = UserDefaults.standard.bool(forKey: key)
         UserDefaults.standard.setValue(true, forKey: key)
@@ -50,6 +51,7 @@ final class DataManager: DataManagerProtocol {
     
     func saveTodos(_ todos: [DummyTodo], date: Date) throws {
         for todo in todos {
+            print(todo.reminder, todo.isCompleted)
             let keyedValues: [TodoKeys: Any] = [
                 .reminder:      todo.reminder,
                 .isCompleted:   todo.isCompleted,

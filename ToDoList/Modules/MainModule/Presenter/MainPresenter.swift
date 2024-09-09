@@ -13,25 +13,36 @@ protocol MainViewProtocol: AnyObject {
 
 protocol MainViewPresenterProtocol: AnyObject {
     init(view: MainViewProtocol, interactor: MainInteractorInputProtocol, router: RouterProtocol)
-    
+    func loadInitialReminders()
 }
 
-final class MainPresenter: MainViewPresenterProtocol {
+//MARK: MainPresenter
+final class MainPresenter {
     let concurrentQueue = DispatchQueue(label: "concurrentqueue-presenter-vladislavgolovachev",
                                         qos: .userInitiated,
                                         attributes: .concurrent)
     
     weak var view: MainViewProtocol?
-    let interactor: MainInteractorInputProtocol?
-    let router: RouterProtocol?
+    let interactor: MainInteractorInputProtocol
+    let router: RouterProtocol
     
-    init(view: any MainViewProtocol, interactor: any MainInteractorInputProtocol, router: any RouterProtocol) {
+    init(view: MainViewProtocol, interactor: MainInteractorInputProtocol, router: RouterProtocol) {
         self.view = view
         self.interactor = interactor
         self.router = router
     }
 }
 
+//MARK: MainViewPresenterProtocol
+extension MainPresenter: MainViewPresenterProtocol {
+    func loadInitialReminders() {
+        interactor.loadInitialReminders()
+    }
+}
+
+//MARK: MainInteractorOutputProtocol
 extension MainPresenter: MainInteractorOutputProtocol {
-    
+    func errorCaused(message: String) {
+        router.showAlert(message: message)
+    }
 }

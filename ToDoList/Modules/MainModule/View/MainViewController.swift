@@ -59,6 +59,8 @@ final class MainViewController: UIViewController {
     //MARK: ViewController LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        presenter?.loadInitialReminders()
+        
         view.backgroundColor = MainViewConstants.backgroundColor
         
         segmentedControl.addTarget(self, action: #selector(segmentedControlAction(_:)), for: .valueChanged)
@@ -186,7 +188,6 @@ extension MainViewController: CellDelegateProtocol {
 
 //MARK: Local Constants
 extension MainViewController {
-    
     private enum ViewConstants {
         static let upperPadding = 10.0
         enum Spacing {

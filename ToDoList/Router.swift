@@ -9,6 +9,7 @@ import UIKit
 
 protocol RouterProtocol {
     func initiateRootViewController() -> UIViewController
+    func showAlert(message: String)
 }
 
 final class Router: RouterProtocol {
@@ -24,5 +25,16 @@ final class Router: RouterProtocol {
         rootViewController = vc
         
         return vc
+    }
+    
+    func showAlert(message: String) {
+        func showAlert(message: String) {
+            let alert = UIAlertController(title: "An error caused",
+                                          message: message,
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Close", style: .default))
+            
+            rootViewController?.present(alert, animated: true)
+        }
     }
 }
