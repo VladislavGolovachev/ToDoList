@@ -8,10 +8,10 @@
 import Foundation
 
 struct TodosResponse: Decodable {
-    let todos: [Todo]
+    let todos: [DummyTodo]
 }
 
-struct Todo: Decodable {
+struct DummyTodo: Decodable {
     let reminder: String
     let isCompleted: Bool
     

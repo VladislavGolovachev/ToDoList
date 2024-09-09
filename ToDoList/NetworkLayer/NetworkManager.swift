@@ -8,14 +8,14 @@
 import Foundation
 
 protocol NetworkManagerProtocol {
-    func getTodos(completion: @escaping (Result<TodosResponse, NetworkError>) -> Void)
+    func getTodos(completion: @escaping (Result<[DummyTodo], NetworkError>) -> Void)
 }
 
 //MARK: NetworkManagerProtocol
 struct NetworkManager: NetworkManagerProtocol {
     private let router = NetworkRouter<DummyApiEndPoint>()
     
-    func getTodos(completion: @escaping (Result<TodosResponse, NetworkError>) -> Void) {
+    func getTodos(completion: @escaping (Result<[DummyTodo], NetworkError>) -> Void) {
         router.request(.todos) { data, response, error in
             if error != nil {
                 completion(.failure(.networkConnection))
@@ -32,7 +32,7 @@ struct NetworkManager: NetworkManagerProtocol {
             
             do {
                 let apiResponse = try JSONDecoder().decode(TodosResponse.self, from: data)
-                completion(.success(apiResponse))
+                completion(.success(apiResponse.todos))
             } catch {
                 completion(.failure(.unableToDecode))
             }
