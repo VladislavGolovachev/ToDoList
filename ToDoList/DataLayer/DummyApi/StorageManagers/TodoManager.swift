@@ -59,8 +59,8 @@ final class TodoManager: CoreDataStorageManager {
 
 //MARK: Additional Public Functions
 extension TodoManager {
-    func fetch(for index: Int, forCompleted areCompleted: Bool) throws -> TodoEntity {
-        let todos = try fetchAll(with: areCompleted)
+    func fetch(for index: Int, forCompleted isCompleted: Bool) throws -> TodoEntity {
+        let todos = try fetchAll(with: isCompleted)
         return todos[index]
     }
     

@@ -81,9 +81,7 @@ final class MainViewController: UIViewController {
 //MARK: Actions
 extension MainViewController {
     @objc private func segmentedControlAction(_ control: CustomSegmentedControl) {
-        let array = ["1", "20", "99+"]
-        control.setRemindersAmount(array[Int.random(in: 0...2999) / 1000],
-                                   forSegment: control.selectedSegmentIndex)
+        tableView.reloadData()
     }
     
     @objc private func newTaskButtonAction2(_ button: UIButton) {
@@ -154,9 +152,18 @@ extension MainViewController {
 //MARK: UITableViewDataSource
 extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let count = presenter?.remindersCount() ?? 0
+        var count: Int?
+        switch segmentedControl.selectedSegmentIndex {
+        case 0:
+            count = presenter?.remindersCount()
+        case 1:
+            count = presenter?.completedRemindersCount()
+        case 2:
+            count = presenter?.notCompletedRemindersCount()
+        default: break
+        }
         
-        return count
+        return count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -168,24 +175,33 @@ extension MainViewController: UITableViewDataSource {
         cell.cellDelegate = self
         
         let index = indexPath.row
-        if let reminder = presenter?.reminder(for: index) {
+        var isCompleted: Bool? = nil
+        switch segmentedControl.selectedSegmentIndex {
+        case 1:
+            isCompleted = false
+        case 2:
+            isCompleted = true
+        default: break
+        }
+        
+        if let reminder = presenter?.reminder(for: index, isCompleted: isCompleted) {
             cell.setReminder(reminder)
         }
-        if let isCompleted = presenter?.isCompleted(for: index) {
+        if let isCompleted = presenter?.isCompleted(for: index, isCompleted: isCompleted) {
             cell.setIsCompleted(isCompleted)
         }
-        if let date = presenter?.date(for: index) {
+        if let date = presenter?.date(for: index, isCompleted: isCompleted) {
             cell.setDate(date)
         }
-        if let time = presenter?.time(for: index) {
+        if let time = presenter?.time(for: index, isCompleted: isCompleted) {
             cell.setTime(time)
         }
         if let presenter {
-            print(presenter.reminder(for: index))
-            print(presenter.description(for: index))
-            print(presenter.isCompleted(for: index))
-            print(presenter.date(for: index))
-            print(presenter.time(for: index))
+            print(presenter.reminder(for: index, isCompleted: isCompleted))
+            print(presenter.description(for: index, isCompleted: isCompleted))
+            print(presenter.isCompleted(for: index, isCompleted: isCompleted))
+            print(presenter.date(for: index, isCompleted: isCompleted))
+            print(presenter.time(for: index, isCompleted: isCompleted))
             print()
         }
         

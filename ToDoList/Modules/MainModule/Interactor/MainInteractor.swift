@@ -15,7 +15,7 @@ protocol MainInteractorOutputProtocol: AnyObject {
 protocol MainInteractorInputProtocol: AnyObject {
     func loadInitialReminders()
     
-    func todoProperty(for index: Int, property: TodoKeys) -> Any?
+    func todoProperty(for index: Int, property: TodoKeys, isCompleted: Bool?) -> Any?
     func remindersCount(areForCompleted areCompleted: Bool?) -> Int
 }
 
@@ -44,10 +44,10 @@ extension MainInteractor: MainInteractorInputProtocol {
         return count
     }
     
-    func todoProperty(for index: Int, property: TodoKeys) -> Any? {
+    func todoProperty(for index: Int, property: TodoKeys, isCompleted: Bool?) -> Any? {
         var todo: TodoEntity
         do {
-            todo = try dataManager.fetchTodo(for: index)
+            todo = try dataManager.fetchTodo(for: index, isCompleted: isCompleted)
         } catch {
             handleStorageError(error)
             return nil

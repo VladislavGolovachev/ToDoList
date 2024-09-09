@@ -10,7 +10,7 @@ import Foundation
 protocol DataManagerProtocol {
     var isFirstLaunch: Bool {get}
     
-    func fetchTodo(for index: Int) throws -> TodoEntity
+    func fetchTodo(for index: Int, isCompleted: Bool?) throws -> TodoEntity
     func updateTodo(for index: Int, with keyedValues: [TodoKeys: Any]) throws
     func deleteTodo(for index: Int) throws
     func getTodosCount(areForCompleted areCompleted: Bool?) throws -> Int
@@ -29,8 +29,14 @@ final class DataManager: DataManagerProtocol {
         return !isNotFirstLaunch
     }
     
-    func fetchTodo(for index: Int) throws -> TodoEntity {
-        let todo = try todoManager.fetch(for: index)
+    func fetchTodo(for index: Int, isCompleted: Bool?) throws -> TodoEntity {
+        var todo: TodoEntity
+        if let isCompleted {
+            todo = try todoManager.fetch(for: index, forCompleted: isCompleted)
+        } else {
+            todo = try todoManager.fetch(for: index)
+        }
+        
         return todo
     }
     
