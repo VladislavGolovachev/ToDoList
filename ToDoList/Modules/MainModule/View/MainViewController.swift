@@ -151,7 +151,9 @@ extension MainViewController {
 //MARK: UITableViewDataSource
 extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        20
+        let count = presenter?.remindersCount() ?? 0
+        
+        return count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -161,6 +163,28 @@ extension MainViewController: UITableViewDataSource {
         as? ToDoTableViewCell ?? ToDoTableViewCell()
         
         cell.cellDelegate = self
+        
+        let index = indexPath.row
+        if let reminder = presenter?.reminder(for: index) {
+            cell.setReminder(reminder)
+        }
+        if let isCompleted = presenter?.isCompleted(for: index) {
+            cell.setIsCompleted(isCompleted)
+        }
+        if let date = presenter?.date(for: index) {
+            cell.setDate(date)
+        }
+        if let time = presenter?.time(for: index) {
+            cell.setTime(time)
+        }
+        if let presenter {
+            print(presenter.reminder(for: index))
+            print(presenter.description(for: index))
+            print(presenter.isCompleted(for: index))
+            print(presenter.date(for: index))
+            print(presenter.time(for: index))
+            print()
+        }
         
         return cell
     }
@@ -173,7 +197,9 @@ extension MainViewController: UITableViewDelegate {
 
 //MARK: MainViewProtocol
 extension MainViewController: MainViewProtocol {
-    
+    func reloadTableView() {
+        tableView.reloadData()
+    }
 }
 
 //MARK: CellDelegateProtocol

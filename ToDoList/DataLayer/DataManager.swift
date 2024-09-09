@@ -51,7 +51,6 @@ final class DataManager: DataManagerProtocol {
     
     func saveTodos(_ todos: [DummyTodo], date: Date) throws {
         for todo in todos {
-            print(todo.reminder, todo.isCompleted)
             let keyedValues: [TodoKeys: Any] = [
                 .reminder:      todo.reminder,
                 .isCompleted:   todo.isCompleted,

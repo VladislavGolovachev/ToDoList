@@ -12,11 +12,12 @@ protocol CellDelegateProtocol: AnyObject {
 }
 
 final class ToDoTableViewCell: UITableViewCell {
+    //MARK: Properties
     static let reuseIdentifier = "ToDoCell"
     
     weak var cellDelegate: CellDelegateProtocol?
     
-    let backView = {
+    private let backView = {
         let view = UIView()
         view.backgroundColor = ColorConstants.cell
         view.layer.cornerRadius = CellConstants.cornerRadius
@@ -27,12 +28,12 @@ final class ToDoTableViewCell: UITableViewCell {
         
         return view
     }()
-    let reminderTextView = {
+    private let reminderTextView = {
         let textView = UITextView()
         textView.backgroundColor = ColorConstants.cell
         textView.isScrollEnabled = false
         
-        textView.text = "Client Review & Feedback"
+        textView.text = "New reminder"
         textView.font = FontConstants.primary
         textView.textColor = ColorConstants.Text.primary
         
@@ -41,12 +42,12 @@ final class ToDoTableViewCell: UITableViewCell {
         
         return textView
     }()
-    let descriptionTextView = {
+    private let descriptionTextView = {
         let textView = UITextView()
         textView.backgroundColor = ColorConstants.cell
         textView.isScrollEnabled = false
         
-        textView.text = "Crypto Wallet"
+        textView.text = "Notes"
         textView.font = FontConstants.secondary
         textView.textColor = ColorConstants.Text.secondary
         
@@ -55,31 +56,31 @@ final class ToDoTableViewCell: UITableViewCell {
         
         return textView
     }()
-    let separatorView = {
+    private let separatorView = {
         let view = UIView()
         view.backgroundColor = ColorConstants.separator
         
         return view
     }()
-    let dateLabel = {
+    private let dateLabel = {
         let label = UILabel()
-        label.text = "Today"
+        label.text = "No date was set"
         
         label.font = FontConstants.secondary
         label.textColor = ColorConstants.Text.secondary
         
         return label
     }()
-    let timeLabel = {
+    private let timeLabel = {
         let label = UILabel()
-        label.text = "10:00PM"
+        label.text = "No time was set"
         
         label.font = FontConstants.time
         label.textColor = ColorConstants.Text.time
         
         return label
     }()
-    let checkboxButton = {
+    private let checkboxButton = {
         let button = ButtonWithExpandedHitbox(type: .custom)
         let name = CheckboxConstants.ImageName.unchecked
         let circleImage = UIImage(named: name)
@@ -110,28 +111,66 @@ final class ToDoTableViewCell: UITableViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         reminderTextView.text = " "
-        descriptionTextView.text = " "
+        descriptionTextView.text = "Notes"
+        dateLabel.text = "No date was set"
+        timeLabel.text = "No time was set"
+        setReminderCheckedState(.notCompleted)
     }
 }
 
 //MARK: Actions
 extension ToDoTableViewCell {
     @objc private func action(_ sender: UIButton) {
-        var name: String
-        if checkboxButton.tag == 0 {
-            name = CheckboxConstants.ImageName.checked
-        } else {
-            name = CheckboxConstants.ImageName.unchecked
+        if sender.tag == 0 {
+            setReminderCheckedState(.completed)
+            return
         }
-        checkboxButton.tag = 1 - checkboxButton.tag
-        
-        let image = UIImage(named: name)
-        sender.setImage(image, for: .normal)
+        setReminderCheckedState(.notCompleted)
+    }
+}
+//MARK: Public Functions
+extension ToDoTableViewCell {
+    func setReminder(_ reminder: String) {
+        reminderTextView.text = reminder
+    }
+    
+    func setDescription(_ description: String) {
+        descriptionTextView.text = description
+    }
+    
+    func setIsCompleted(_ isCompleted: Bool) {
+        if isCompleted {
+            setReminderCheckedState(.completed)
+            return
+        }
+        setReminderCheckedState(.notCompleted)
+    }
+    
+    func setDate(_ date: String) {
+        dateLabel.text = date
+    }
+    
+    func setTime(_ time: String) {
+        timeLabel.text = time
     }
 }
 
 //MARK: Private Functions
 extension ToDoTableViewCell {
+    private func setReminderCheckedState(_ state: CheckboxState) {
+        var name: String
+        if state == .completed {
+            name = CheckboxConstants.ImageName.checked
+            checkboxButton.tag = 1
+        } else {
+            name = CheckboxConstants.ImageName.unchecked
+            checkboxButton.tag = 0
+        }
+        
+        let image = UIImage(named: name)
+        checkboxButton.setImage(image, for: .normal)
+    }
+    
     private func addSubviews() {
         backView.addSubview(reminderTextView)
         backView.addSubview(descriptionTextView)
@@ -247,5 +286,10 @@ extension ToDoTableViewCell {
         }
         static let width = 26.0
         static let centerYOffset = 40.0
+    }
+    
+    private enum CheckboxState {
+        case completed
+        case notCompleted
     }
 }

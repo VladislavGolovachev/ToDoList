@@ -8,12 +8,19 @@
 import Foundation
 
 protocol MainViewProtocol: AnyObject {
-    
+    func reloadTableView()
 }
 
 protocol MainViewPresenterProtocol: AnyObject {
     init(view: MainViewProtocol, interactor: MainInteractorInputProtocol, router: RouterProtocol)
     func loadInitialReminders()
+    
+    func reminder(for index: Int) -> String?
+    func description(for index: Int) -> String?
+    func isCompleted(for index: Int) -> Bool
+    func date(for index: Int) -> String?
+    func time(for index: Int) -> String?
+    func remindersCount() -> Int
 }
 
 //MARK: MainPresenter
@@ -38,11 +45,74 @@ extension MainPresenter: MainViewPresenterProtocol {
     func loadInitialReminders() {
         interactor.loadInitialReminders()
     }
+    
+    func reminder(for index: Int) -> String? {
+        let reminder = interactor.todoProperty(for: index, property: .reminder) as? String
+        return reminder
+    }
+    
+    func description(for index: Int) -> String? {
+        let notes = interactor.todoProperty(for: index, property: .notes) as? String
+        return notes
+    }
+    
+    func isCompleted(for index: Int) -> Bool {
+        let isCompleted = interactor.todoProperty(for: index, property: .isCompleted) as? Bool
+        return isCompleted ?? false
+    }
+    
+    func date(for index: Int) -> String? {
+        guard let date = interactor.todoProperty(for: index, property: .date) as? Date else {
+            return nil
+        }
+        
+        switch true {
+        case Calendar.current.isDateInYesterday(date):
+            return "Yesterday"
+        case Calendar.current.isDateInToday(date):
+            return "Today"
+        case Calendar.current.isDateInTomorrow(date):
+            return "Tomorrow"
+            
+        default: break
+        }
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd:MM:yy"
+        
+        let dateString = dateFormatter.string(from: date)
+        
+        return dateString
+    }
+    
+    func time(for index: Int) -> String? {
+        guard let date = interactor.todoProperty(for: index, property: .date) as? Date else {
+            return nil
+        }
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "h:mm a"
+        let timeString = dateFormatter.string(from: date)
+        
+        return timeString
+    }
+    
+    func remindersCount() -> Int {
+        interactor.remindersCount()
+    }
 }
 
 //MARK: MainInteractorOutputProtocol
 extension MainPresenter: MainInteractorOutputProtocol {
     func errorCaused(message: String) {
-        router.showAlert(message: message)
+        DispatchQueue.main.async {
+            self.router.showAlert(message: message)
+        }
+    }
+    
+    func reloadView() {
+        DispatchQueue.main.async {
+            self.view?.reloadTableView()
+        }
     }
 }
