@@ -100,11 +100,13 @@ extension TodoManager {
     }
     
     private func request() -> NSFetchRequest<TodoEntity> {
-        let sortDescriptor = NSSortDescriptor(key: TodoKeys.date.rawValue,
-                                              ascending: false)
+        let sortDescriptor1 = NSSortDescriptor(key: TodoKeys.date.rawValue,
+                                               ascending: false)
+        let sortDescriptor2 = NSSortDescriptor(key: TodoKeys.creationDate.rawValue,
+                                               ascending: false)
         
         let request = TodoEntity.fetchRequest()
-        request.sortDescriptors = [sortDescriptor]
+        request.sortDescriptors = [sortDescriptor1, sortDescriptor2]
         
         return request
     }
@@ -117,15 +119,5 @@ extension TodoManager {
                 throw StorageError.unableToSaveData
             }
         }
-    }
-}
-
-//MARK: TodoKeys
-extension TodoManager {
-    enum TodoKeys: String{
-        case reminder = "reminder"
-        case notes = "notes"
-        case isCompleted = "isCompleted"
-        case date = "date"
     }
 }

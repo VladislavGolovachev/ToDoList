@@ -33,7 +33,7 @@ final class ToDoTableViewCell: UITableViewCell {
         textView.backgroundColor = ColorConstants.cell
         textView.isScrollEnabled = false
         
-        textView.text = "New reminder"
+        textView.text = DefaultTextConstant.initialReminder
         textView.font = FontConstants.primary
         textView.textColor = ColorConstants.Text.primary
         
@@ -47,7 +47,7 @@ final class ToDoTableViewCell: UITableViewCell {
         textView.backgroundColor = ColorConstants.cell
         textView.isScrollEnabled = false
         
-        textView.text = "Notes"
+        textView.text = DefaultTextConstant.description
         textView.font = FontConstants.secondary
         textView.textColor = ColorConstants.Text.secondary
         
@@ -64,7 +64,7 @@ final class ToDoTableViewCell: UITableViewCell {
     }()
     private let dateLabel = {
         let label = UILabel()
-        label.text = "No date was set"
+        label.text = DefaultTextConstant.date
         
         label.font = FontConstants.secondary
         label.textColor = ColorConstants.Text.secondary
@@ -73,7 +73,7 @@ final class ToDoTableViewCell: UITableViewCell {
     }()
     private let timeLabel = {
         let label = UILabel()
-        label.text = "No time was set"
+        label.text = DefaultTextConstant.time
         
         label.font = FontConstants.time
         label.textColor = ColorConstants.Text.time
@@ -110,10 +110,10 @@ final class ToDoTableViewCell: UITableViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        reminderTextView.text = " "
-        descriptionTextView.text = "Notes"
-        dateLabel.text = "No date was set"
-        timeLabel.text = "No time was set"
+        reminderTextView.text = DefaultTextConstant.reusableReminder
+        descriptionTextView.text = DefaultTextConstant.description
+        dateLabel.text = DefaultTextConstant.date
+        timeLabel.text = DefaultTextConstant.time
         setReminderCheckedState(.notCompleted)
     }
 }
@@ -291,5 +291,13 @@ extension ToDoTableViewCell {
     private enum CheckboxState {
         case completed
         case notCompleted
+    }
+    
+    private enum DefaultTextConstant {
+        static let initialReminder = "New reminder"
+        static let reusableReminder = ""
+        static let description = "Notes"
+        static let date = "Set a date"
+        static let time = "Set time"
     }
 }

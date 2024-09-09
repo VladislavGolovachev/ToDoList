@@ -12,4 +12,5 @@ enum TodoKeys: String {
     case notes = "notes"
     case isCompleted = "isCompleted"
     case date = "date"
+    case creationDate = "creationDate"
 }

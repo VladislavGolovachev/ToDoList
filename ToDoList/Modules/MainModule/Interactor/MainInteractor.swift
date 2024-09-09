@@ -62,6 +62,8 @@ extension MainInteractor: MainInteractorInputProtocol {
             return todo.isCompleted
         case .date:
             return todo.date
+        default:
+            return nil
         }
     }
     

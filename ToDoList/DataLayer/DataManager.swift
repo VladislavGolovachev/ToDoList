@@ -54,7 +54,7 @@ final class DataManager: DataManagerProtocol {
             let keyedValues: [TodoKeys: Any] = [
                 .reminder:      todo.reminder,
                 .isCompleted:   todo.isCompleted,
-                .date:          date
+                .creationDate:          date
             ]
             try todoManager.persist(with: converted(keyedValues))
         }
