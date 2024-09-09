@@ -30,7 +30,6 @@ final class MainViewController: UIViewController {
     }()
     let dateLabel = {
         let label = UILabel()
-        label.text = "Wednesday, 11 May"
         label.font = FontConstants.date
         label.textColor = ColorConstants.Text.date
         
@@ -62,6 +61,10 @@ final class MainViewController: UIViewController {
         presenter?.loadInitialReminders()
         
         view.backgroundColor = MainViewConstants.backgroundColor
+        
+        if let dateString = presenter?.currentDate() {
+            dateLabel.text = dateString
+        }
         
         segmentedControl.addTarget(self, action: #selector(segmentedControlAction(_:)), for: .valueChanged)
         newTaskButton.addTarget(self, action: #selector(newTaskButtonAction2(_:)), for: .touchUpInside)
@@ -197,7 +200,16 @@ extension MainViewController: UITableViewDelegate {
 
 //MARK: MainViewProtocol
 extension MainViewController: MainViewProtocol {
-    func reloadTableView() {
+    func reload() {
+        if let count = presenter?.remindersCount() {
+            segmentedControl.setRemindersAmount(String(count), forSegment: 0)
+        }
+        if let count = presenter?.notCompletedRemindersCount() {
+            segmentedControl.setRemindersAmount(String(count), forSegment: 1)
+        }
+        if let count = presenter?.completedRemindersCount() {
+            segmentedControl.setRemindersAmount(String(count), forSegment: 2)
+        }
         tableView.reloadData()
     }
 }

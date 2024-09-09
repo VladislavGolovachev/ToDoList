@@ -8,7 +8,7 @@
 import Foundation
 
 protocol MainViewProtocol: AnyObject {
-    func reloadTableView()
+    func reload()
 }
 
 protocol MainViewPresenterProtocol: AnyObject {
@@ -20,7 +20,12 @@ protocol MainViewPresenterProtocol: AnyObject {
     func isCompleted(for index: Int) -> Bool
     func date(for index: Int) -> String?
     func time(for index: Int) -> String?
+    
     func remindersCount() -> Int
+    func completedRemindersCount() -> Int
+    func notCompletedRemindersCount() -> Int
+    
+    func currentDate() -> String
 }
 
 //MARK: MainPresenter
@@ -97,8 +102,28 @@ extension MainPresenter: MainViewPresenterProtocol {
         return timeString
     }
     
+    func currentDate() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEEE, d MMMM"
+        
+        let dateString = dateFormatter.string(from: Date.now)
+        
+        return dateString
+    }
+    
     func remindersCount() -> Int {
-        interactor.remindersCount()
+        let count = interactor.remindersCount(areForCompleted: nil)
+        return count
+    }
+    
+    func completedRemindersCount() -> Int {
+        let count = interactor.remindersCount(areForCompleted: true)
+        return count
+    }
+    
+    func notCompletedRemindersCount() -> Int {
+        let count = interactor.remindersCount(areForCompleted: false)
+        return count
     }
 }
 
@@ -112,7 +137,7 @@ extension MainPresenter: MainInteractorOutputProtocol {
     
     func reloadView() {
         DispatchQueue.main.async {
-            self.view?.reloadTableView()
+            self.view?.reload()
         }
     }
 }

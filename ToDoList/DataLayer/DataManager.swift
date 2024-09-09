@@ -8,13 +8,13 @@
 import Foundation
 
 protocol DataManagerProtocol {
+    var isFirstLaunch: Bool {get}
+    
     func fetchTodo(for index: Int) throws -> TodoEntity
     func updateTodo(for index: Int, with keyedValues: [TodoKeys: Any]) throws
     func deleteTodo(for index: Int) throws
-    func getTodosCount() throws -> Int
-    
+    func getTodosCount(areForCompleted areCompleted: Bool?) throws -> Int
     func saveTodos(_: [DummyTodo], date: Date) throws
-    var isFirstLaunch: Bool {get}
 }
 
 final class DataManager: DataManagerProtocol {
@@ -43,8 +43,8 @@ final class DataManager: DataManagerProtocol {
         try todoManager.delete(for: index)
     }
     
-    func getTodosCount() throws -> Int {
-        let count = try todoManager.count()
+    func getTodosCount(areForCompleted areCompleted: Bool?) throws -> Int {
+        let count = try todoManager.count(areForCompleted: areCompleted)
         
         return count
     }

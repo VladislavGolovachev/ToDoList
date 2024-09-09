@@ -8,6 +8,7 @@
 import Foundation
 import CoreData
 
+//MARK: CoreDataStorageManager
 final class TodoManager: CoreDataStorageManager {
     typealias KeyType = Int
     typealias ObjectType = TodoEntity
@@ -54,20 +55,35 @@ final class TodoManager: CoreDataStorageManager {
             }
         }
     }
+}
+
+//MARK: Additional Public Functions
+extension TodoManager {
+    func fetch(for index: Int, forCompleted areCompleted: Bool) throws -> TodoEntity {
+        let todos = try fetchAll(with: areCompleted)
+        return todos[index]
+    }
     
-    func count() throws -> Int {
-        let todos = try fetchAll()
+    func count(areForCompleted areCompleted: Bool? = nil) throws -> Int {
+        let todos = try fetchAll(with: areCompleted)
         return todos.count
     }
 }
 
+//MARK: Private Functions
 extension TodoManager {
-    private func fetchAll() throws -> [TodoEntity] {
+    private func fetchAll(with areCompleted: Bool? = nil) throws -> [TodoEntity] {
         if let error = storage.loadingError {
             throw error
         }
         
         let request = request()
+        if let areCompleted {
+            let predicate = NSPredicate(format: "isCompleted == %@",
+                                        NSNumber(value: areCompleted))
+            request.predicate = predicate
+        }
+        
         var todos: [TodoEntity]?
         try storage.backgroundContext.performAndWait { [weak self] in
             do {
@@ -104,6 +120,7 @@ extension TodoManager {
     }
 }
 
+//MARK: TodoKeys
 extension TodoManager {
     enum TodoKeys: String{
         case reminder = "reminder"

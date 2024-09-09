@@ -91,7 +91,6 @@ extension CustomSegmentedControl {
             label.backgroundColor = ColorConstants.notSelected
         }
         
-        label.text = "99+"
         label.font = SegmentConstants.font
         label.textColor = ColorConstants.segmentLabelText
         

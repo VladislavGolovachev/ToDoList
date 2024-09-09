@@ -16,7 +16,7 @@ protocol MainInteractorInputProtocol: AnyObject {
     func loadInitialReminders()
     
     func todoProperty(for index: Int, property: TodoKeys) -> Any?
-    func remindersCount() -> Int
+    func remindersCount(areForCompleted areCompleted: Bool?) -> Int
 }
 
 //MARK: MainInteractor
@@ -25,16 +25,17 @@ final class MainInteractor {
                                     qos: .utility)
     
     weak var presenter: MainInteractorOutputProtocol?
-    lazy var dataManager: DataManagerProtocol = DataManager() // needs to alloc from queue, so the context would be private
+    // needs to alloc from queue, so the context would be private
+    lazy var dataManager: DataManagerProtocol = DataManager()
     let networkManager = NetworkManager()
 }
 
 //MARK: MainInteractorInputProtocol
 extension MainInteractor: MainInteractorInputProtocol {
-    func remindersCount() -> Int {
+    func remindersCount(areForCompleted areCompleted: Bool?) -> Int {
         var count = 0
         do {
-            count = try dataManager.getTodosCount()
+            count = try dataManager.getTodosCount(areForCompleted: areCompleted)
         } catch {
             handleStorageError(error)
             return 0
