@@ -147,23 +147,36 @@ extension MainViewController {
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
     }
+    
+    private func customizeCell(_ cell: ToDoTableViewCell, at row: Int) {
+        if let reminder = presenter?.reminder(for: row) {
+            cell.setReminder(reminder)
+        }
+        if let isCompleted = presenter?.isCompleted(for: row) {
+            cell.setIsCompleted(isCompleted)
+        }
+        if let date = presenter?.date(for: row) {
+            cell.setDate(date)
+        }
+        if let time = presenter?.time(for: row) {
+            cell.setTime(time)
+        }
+        if let presenter {
+            print(presenter.reminder(for: row))
+            print(presenter.description(for: row))
+            print(presenter.isCompleted(for: row))
+            print(presenter.date(for: row))
+            print(presenter.time(for: row))
+            print()
+        }
+    }
 }
 
 //MARK: UITableViewDataSource
 extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        var count: Int?
-        switch segmentedControl.selectedSegmentIndex {
-        case 0:
-            count = presenter?.remindersCount()
-        case 1:
-            count = presenter?.completedRemindersCount()
-        case 2:
-            count = presenter?.notCompletedRemindersCount()
-        default: break
-        }
-        
-        return count ?? 0
+        var count = presenter?.remindersCount() ?? 0
+        return count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -173,39 +186,19 @@ extension MainViewController: UITableViewDataSource {
         as? ToDoTableViewCell ?? ToDoTableViewCell()
         
         cell.cellDelegate = self
-        
-        let index = indexPath.row
-        var isCompleted: Bool? = nil
-        switch segmentedControl.selectedSegmentIndex {
-        case 1:
-            isCompleted = false
-        case 2:
-            isCompleted = true
-        default: break
-        }
-        
-        if let reminder = presenter?.reminder(for: index, isCompleted: isCompleted) {
-            cell.setReminder(reminder)
-        }
-        if let isCompleted = presenter?.isCompleted(for: index, isCompleted: isCompleted) {
-            cell.setIsCompleted(isCompleted)
-        }
-        if let date = presenter?.date(for: index, isCompleted: isCompleted) {
-            cell.setDate(date)
-        }
-        if let time = presenter?.time(for: index, isCompleted: isCompleted) {
-            cell.setTime(time)
-        }
-        if let presenter {
-            print(presenter.reminder(for: index, isCompleted: isCompleted))
-            print(presenter.description(for: index, isCompleted: isCompleted))
-            print(presenter.isCompleted(for: index, isCompleted: isCompleted))
-            print(presenter.date(for: index, isCompleted: isCompleted))
-            print(presenter.time(for: index, isCompleted: isCompleted))
-            print()
-        }
+        customizeCell(cell, at: indexPath.row)
         
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, 
+                   commit editingStyle: UITableViewCell.EditingStyle,
+                   forRowAt indexPath: IndexPath) {
+        
     }
 }
 
@@ -216,6 +209,10 @@ extension MainViewController: UITableViewDelegate {
 
 //MARK: MainViewProtocol
 extension MainViewController: MainViewProtocol {
+    var selectedIndexOfSegmentedControl: Int {
+        return segmentedControl.selectedSegmentIndex
+    }
+    
     func reload() {
         if let count = presenter?.remindersCount() {
             segmentedControl.setRemindersAmount(String(count), forSegment: 0)
@@ -226,6 +223,7 @@ extension MainViewController: MainViewProtocol {
         if let count = presenter?.completedRemindersCount() {
             segmentedControl.setRemindersAmount(String(count), forSegment: 2)
         }
+        
         tableView.reloadData()
     }
 }

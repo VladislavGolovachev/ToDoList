@@ -8,24 +8,25 @@
 import Foundation
 
 protocol MainViewProtocol: AnyObject {
+    var selectedIndexOfSegmentedControl: Int {get}
     func reload()
 }
 
 protocol MainViewPresenterProtocol: AnyObject {
     init(view: MainViewProtocol, interactor: MainInteractorInputProtocol, router: RouterProtocol)
     func loadInitialReminders()
+    func deleteReminder(for index: Int)
     
-    func reminder(for index: Int, isCompleted: Bool?) -> String?
-    func description(for index: Int, isCompleted: Bool?) -> String?
-    func isCompleted(for index: Int, isCompleted: Bool?) -> Bool
-    func date(for index: Int, isCompleted: Bool?) -> String?
-    func time(for index: Int, isCompleted: Bool?) -> String?
+    func currentDate() -> String
+    func reminder(for index: Int) -> String?
+    func description(for index: Int) -> String?
+    func isCompleted(for index: Int) -> Bool
+    func date(for index: Int) -> String?
+    func time(for index: Int) -> String?
     
     func remindersCount() -> Int
     func completedRemindersCount() -> Int
     func notCompletedRemindersCount() -> Int
-    
-    func currentDate() -> String
 }
 
 //MARK: MainPresenter
@@ -45,37 +46,68 @@ final class MainPresenter {
     }
 }
 
+//MARK: Private Functions
+extension MainPresenter {
+    private func isCompleted() -> Bool? {
+        guard let index = view?.selectedIndexOfSegmentedControl else {
+            return nil
+        }
+        
+        switch index {
+        case 1:
+            return false
+        case 2:
+            return true
+        default:
+            return nil
+        }
+    }
+}
+
 //MARK: MainViewPresenterProtocol
 extension MainPresenter: MainViewPresenterProtocol {
     func loadInitialReminders() {
         interactor.loadInitialReminders()
     }
     
-    func reminder(for index: Int, isCompleted: Bool?) -> String? {
-        let reminder = interactor.todoProperty(for: index, 
+    func deleteReminder(for index: Int) {
+        
+    }
+    
+    func currentDate() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEEE, d MMMM"
+        
+        let dateString = dateFormatter.string(from: Date.now)
+        
+        return dateString
+    }
+    
+    func reminder(for index: Int) -> String? {
+        let reminder = interactor.todoProperty(for: index,
                                                property: .reminder,
-                                               isCompleted: isCompleted) as? String
+                                               isCompleted: isCompleted()) as? String
         return reminder
     }
     
-    func description(for index: Int, isCompleted: Bool?) -> String? {
+    func description(for index: Int) -> String? {
         let notes = interactor.todoProperty(for: index, 
                                             property: .notes,
-                                            isCompleted: isCompleted) as? String
+                                            isCompleted: isCompleted()) as? String
         return notes
     }
     
-    func isCompleted(for index: Int, isCompleted: Bool?) -> Bool {
+    func isCompleted(for index: Int) -> Bool {
         let isCompleted = interactor.todoProperty(for: index, 
                                                   property: .isCompleted,
-                                                  isCompleted: isCompleted) as? Bool
+                                                  isCompleted: isCompleted()) as? Bool
         return isCompleted ?? false
     }
     
-    func date(for index: Int, isCompleted: Bool?) -> String? {
+    func date(for index: Int) -> String? {
         guard let date = interactor.todoProperty(for: index, 
                                                  property: .date,
-                                                 isCompleted: isCompleted) as? Date else {return nil}
+                                                 isCompleted: isCompleted()) as? Date else {return nil}
         
         switch true {
         case Calendar.current.isDateInYesterday(date):
@@ -96,10 +128,10 @@ extension MainPresenter: MainViewPresenterProtocol {
         return dateString
     }
     
-    func time(for index: Int, isCompleted: Bool?) -> String? {
+    func time(for index: Int) -> String? {
         guard let date = interactor.todoProperty(for: index,
                                                  property: .date,
-                                                 isCompleted: isCompleted) as? Date else {return nil}
+                                                 isCompleted: isCompleted()) as? Date else {return nil}
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "h:mm a"
         let timeString = dateFormatter.string(from: date)
@@ -107,17 +139,10 @@ extension MainPresenter: MainViewPresenterProtocol {
         return timeString
     }
     
-    func currentDate() -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "EEEE, d MMMM"
-        
-        let dateString = dateFormatter.string(from: Date.now)
-        
-        return dateString
-    }
-    
     func remindersCount() -> Int {
-        let count = interactor.remindersCount(areForCompleted: nil)
+        let areCompleted = isCompleted()
+        let count = interactor.remindersCount(areForCompleted: areCompleted)
+        
         return count
     }
     
