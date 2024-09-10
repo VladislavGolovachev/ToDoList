@@ -108,13 +108,15 @@ extension TodoManager {
     }
     
     private func request() -> NSFetchRequest<TodoEntity> {
+        let sortDescriptor = NSSortDescriptor(key: TodoKeys.isCompleted.rawValue,
+                                              ascending: true)
         let sortDescriptor1 = NSSortDescriptor(key: TodoKeys.date.rawValue,
                                                ascending: false)
         let sortDescriptor2 = NSSortDescriptor(key: TodoKeys.creationDate.rawValue,
                                                ascending: false)
         
         let request = TodoEntity.fetchRequest()
-        request.sortDescriptors = [sortDescriptor1, sortDescriptor2]
+        request.sortDescriptors = [sortDescriptor, sortDescriptor1, sortDescriptor2]
         
         return request
     }

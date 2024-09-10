@@ -39,6 +39,7 @@ final class ToDoTableViewCell: UITableViewCell {
         
         textView.textContainerInset = .zero
         textView.textContainer.lineFragmentPadding = 0
+        textView.tag = 4
         
         return textView
     }()
@@ -86,7 +87,7 @@ final class ToDoTableViewCell: UITableViewCell {
         let circleImage = UIImage(named: name)
         
         button.setImage(circleImage, for: .normal)
-        button.tag = 0
+        button.tag = CheckboxState.unchecked.rawValue
         
         return button
     }()
@@ -114,7 +115,7 @@ final class ToDoTableViewCell: UITableViewCell {
         descriptionTextView.text = DefaultTextConstant.description
         dateLabel.text = DefaultTextConstant.date
         timeLabel.text = DefaultTextConstant.time
-        setReminderCheckedState(.notCompleted)
+        setReminderCheckedState(.unchecked)
     }
 }
 
@@ -122,10 +123,10 @@ final class ToDoTableViewCell: UITableViewCell {
 extension ToDoTableViewCell {
     @objc private func action(_ sender: UIButton) {
         if sender.tag == 0 {
-            setReminderCheckedState(.completed)
+            setReminderCheckedState(.checked)
             return
         }
-        setReminderCheckedState(.notCompleted)
+        setReminderCheckedState(.unchecked)
     }
 }
 //MARK: Public Functions
@@ -140,10 +141,10 @@ extension ToDoTableViewCell {
     
     func setIsCompleted(_ isCompleted: Bool) {
         if isCompleted {
-            setReminderCheckedState(.completed)
+            setReminderCheckedState(.checked)
             return
         }
-        setReminderCheckedState(.notCompleted)
+        setReminderCheckedState(.unchecked)
     }
     
     func setDate(_ date: String) {
@@ -159,12 +160,12 @@ extension ToDoTableViewCell {
 extension ToDoTableViewCell {
     private func setReminderCheckedState(_ state: CheckboxState) {
         var name: String
-        if state == .completed {
+        if state == .checked {
             name = CheckboxConstants.ImageName.checked
-            checkboxButton.tag = 1
+            checkboxButton.tag = CheckboxState.checked.rawValue
         } else {
             name = CheckboxConstants.ImageName.unchecked
-            checkboxButton.tag = 0
+            checkboxButton.tag = CheckboxState.unchecked.rawValue
         }
         
         let image = UIImage(named: name)
@@ -240,6 +241,11 @@ extension ToDoTableViewCell {
 
 //MARK: UITextViewDelegate
 extension ToDoTableViewCell: UITextViewDelegate {
+//    func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
+//        textView.
+//        r
+//    }
+    
     func textViewDidChange(_ textView: UITextView) {
         cellDelegate?.updateHeightOfRow(cell: self)
     }
@@ -288,9 +294,9 @@ extension ToDoTableViewCell {
         static let centerYOffset = 40.0
     }
     
-    private enum CheckboxState {
-        case completed
-        case notCompleted
+    private enum CheckboxState: Int {
+        case unchecked
+        case checked
     }
     
     private enum DefaultTextConstant {
