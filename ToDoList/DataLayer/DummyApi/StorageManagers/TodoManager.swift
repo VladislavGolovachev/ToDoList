@@ -30,7 +30,22 @@ final class TodoManager: TodoManagerProtocol {
         
         try storage.backgroundContext.performAndWait { [weak self] in
             let todo = try self?.fetch(for: index, amongObjectsWithKeyedValues: searchingKeyedValues)
+            
+            print(todo?.value(forKey: TodoKeys.reminder.rawValue))
+            print(todo?.value(forKey: TodoKeys.notes.rawValue))
+            print(todo?.value(forKey: TodoKeys.modificationDate.rawValue))
+            print(todo?.value(forKey: TodoKeys.date.rawValue))
+            print(todo?.value(forKey: TodoKeys.isCompleted.rawValue))
+            print("////////////////////////////////")
+            print(newKeyedValues)
             todo?.setValuesForKeys(newKeyedValues)
+            
+            print(todo?.value(forKey: TodoKeys.reminder.rawValue))
+            print(todo?.value(forKey: TodoKeys.notes.rawValue))
+            print(todo?.value(forKey: TodoKeys.modificationDate.rawValue))
+            print(todo?.value(forKey: TodoKeys.date.rawValue))
+            print(todo!.value(forKey: TodoKeys.isCompleted.rawValue))
+            print()
             
 //            try self?.saveContext()
         }

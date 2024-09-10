@@ -60,6 +60,11 @@ final class MainViewController: UIViewController {
         super.viewDidLoad()
         presenter?.loadInitialReminders()
         
+        let tap = UITapGestureRecognizer(target: self,
+                                         action: #selector(dismissKeyboard))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
+        
         view.backgroundColor = MainViewConstants.backgroundColor
         
         if let dateString = presenter?.currentDate() {
@@ -72,6 +77,7 @@ final class MainViewController: UIViewController {
         
         tableView.dataSource = self
         tableView.delegate = self
+        segmentedControl.delegate = self
         
         addSubviews()
         setupConstraints()
@@ -80,7 +86,14 @@ final class MainViewController: UIViewController {
 
 //MARK: Actions
 extension MainViewController {
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
     @objc private func segmentedControlAction(_ control: CustomSegmentedControl) {
+        if tableView.isFirstResponder {
+            tableView.resignFirstResponder()
+        }
         reloadTableAccordingToSegmentedControl()
     }
     
@@ -165,6 +178,9 @@ extension MainViewController {
         if let reminder = presenter?.reminder(for: row) {
             cell.setReminder(reminder)
         }
+        if let description = presenter?.description(for: row) {
+            cell.setDescription(description)
+        }
         if let isCompleted = presenter?.isCompleted(for: row) {
             cell.setIsCompleted(isCompleted)
         }
@@ -177,10 +193,13 @@ extension MainViewController {
     }
     
     private func reloadTableAccordingToSegmentedControl() {
-        let indexPath = IndexPath(row: 0, section: 0)
-        
-        tableView.scrollToRow(at: indexPath, at: .top, animated: false)
         tableView.reloadData()
+        
+        if tableViewCount() == 0 {
+            return
+        }
+        let indexPath = IndexPath(row: 0, section: 0)
+        tableView.scrollToRow(at: indexPath, at: .top, animated: false)
     }
     
     private func reloadSegmentedControl() {
@@ -194,11 +213,8 @@ extension MainViewController {
             segmentedControl.setRemindersAmount(String(count), forSegment: 2)
         }
     }
-}
-
-//MARK: UITableViewDataSource
-extension MainViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    
+    private func tableViewCount() -> Int {
         var count: Int?
         switch segmentedControl.selectedSegmentIndex {
         case 0:
@@ -212,6 +228,13 @@ extension MainViewController: UITableViewDataSource {
         }
         
         return count ?? 0
+    }
+}
+
+//MARK: UITableViewDataSource
+extension MainViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return tableViewCount()
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -263,15 +286,40 @@ extension MainViewController: MainViewProtocol {
 //MARK: CellDelegateProtocol
 extension MainViewController: CellDelegateProtocol {
     func reminderChanged(of cell: ToDoTableViewCell, for reminder: String) {
-        guard let index = tableView.indexPath(for: cell)?.row else {return}
+        guard let indexPath = tableView.indexPath(for: cell) else {return}
+        print("reminder edited")
+        presenter?.updateReminder(for: indexPath.row, for: .reminder, with: reminder)
         
-        presenter?.updateReminder(for: index, for: .reminder, with: reminder)
+            print("dismiss keyboard uwuwuuuuuuu")
+            print(segmentedControl.selectedSegmentIndex)
+        
+        let indexPathZero = IndexPath(row: 0, section: 0)
+        if indexPathZero == indexPath {
+            return
+        }
+        
+        tableView.beginUpdates()
+        tableView.deleteRows(at: [indexPath], with: .top)
+        tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .top)
+        tableView.endUpdates()
     }
     
     func descriptionChanged(of cell: ToDoTableViewCell, for description: String) {
-        guard let index = tableView.indexPath(for: cell)?.row else {return}
+        guard let indexPath = tableView.indexPath(for: cell) else {return}
+        print("notes edited")
+        presenter?.updateReminder(for: indexPath.row, for: .notes, with: description)
         
-        presenter?.updateReminder(for: index, for: .reminder, with: description)
+            print(segmentedControl.selectedSegmentIndex)
+        
+        let indexPathZero = IndexPath(row: 0, section: 0)
+        if indexPathZero == indexPath {
+            return
+        }
+        
+        tableView.beginUpdates()
+        tableView.deleteRows(at: [indexPath], with: .top)
+        tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .top)
+        tableView.endUpdates()
     }
     
     func dateBeginEditing(of cell: ToDoTableViewCell) {
@@ -288,20 +336,23 @@ extension MainViewController: CellDelegateProtocol {
         
         presenter?.updateReminder(for: indexPath.row, for: .isCompleted, with: checkboxState)
         
-        var updatesIfNeeded = false
-        switch (segmentedControl.selectedSegmentIndex, checkboxState) {
-        case (1, true):
-            updatesIfNeeded = true
-        case (2, false):
-            updatesIfNeeded = true
-        default: break
+        //like
+        tableView.beginUpdates()
+        tableView.deleteRows(at: [indexPath], with: .fade)
+        if segmentedControl.selectedSegmentIndex == 0 {
+            if checkboxState == true {
+                guard let count = presenter?.completedRemindersCount() else {return}
+                tableView.insertRows(at: [IndexPath(row: count, section: 0)],
+                                     with: .fade)
+            } else {
+                tableView.insertRows(at: [IndexPath(row: 0, section: 0)],
+                                     with: .fade)
+            }
+            //always to put as the first index of its group
+            //means if i closed the task, so -> openedCount
+            //if i opened the task, so -> 0
         }
-        
-        if updatesIfNeeded {
-            tableView.beginUpdates()
-            tableView.deleteRows(at: [indexPath], with: .fade)
-            tableView.endUpdates()
-        }
+        tableView.endUpdates()
         reloadSegmentedControl()
     }
     
@@ -310,6 +361,13 @@ extension MainViewController: CellDelegateProtocol {
         tableView.beginUpdates()
         tableView.endUpdates()
         UIView.setAnimationsEnabled(true)
+    }
+}
+
+//MARK: SegmentedControlDelegate
+extension MainViewController: SegmentedControlDelegate {
+    func segmentWillBeReselected() {
+        tableView.resignFirstResponder()
     }
 }
 

@@ -45,7 +45,7 @@ final class ToDoTableViewCell: UITableViewCell {
         
         textView.textContainerInset = .zero
         textView.textContainer.lineFragmentPadding = 0
-        textView.tag = 4
+        textView.tag = TextViewTag.reminder
         
         return textView
     }()
@@ -60,6 +60,7 @@ final class ToDoTableViewCell: UITableViewCell {
         
         textView.textContainerInset = .zero
         textView.textContainer.lineFragmentPadding = 0
+        textView.tag = TextViewTag.description
         
         return textView
     }()
@@ -248,10 +249,14 @@ extension ToDoTableViewCell {
 
 //MARK: UITextViewDelegate
 extension ToDoTableViewCell: UITextViewDelegate {
-//    func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
-//        textView.
-//        r
-//    }
+    func textViewDidEndEditing(_ textView: UITextView) {
+        print("textVIewdidendediting")
+        if textView.tag == TextViewTag.reminder {
+            cellDelegate?.reminderChanged(of: self, for: textView.text)
+            return
+        }
+        cellDelegate?.descriptionChanged(of: self, for: textView.text)
+    }
     
     func textViewDidChange(_ textView: UITextView) {
         cellDelegate?.updateHeightOfRow(cell: self)
@@ -304,6 +309,11 @@ extension ToDoTableViewCell {
     private enum CheckboxState: Int {
         case unchecked
         case checked
+    }
+    
+    private enum TextViewTag {
+        static let reminder = 10
+        static let description = 20
     }
     
     private enum DefaultTextConstant {

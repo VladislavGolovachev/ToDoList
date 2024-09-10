@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol SegmentedControlDelegate: AnyObject {
+    func segmentWillBeReselected()
+}
+
 final class CustomSegmentedControl: UISegmentedControl {
     private lazy var segmentLabels = {
         var array = [UILabel]()
@@ -15,6 +19,7 @@ final class CustomSegmentedControl: UISegmentedControl {
         }
         return array
     }()
+    weak var delegate: SegmentedControlDelegate?
     
     override var selectedSegmentIndex: Int {
         didSet {
@@ -57,6 +62,7 @@ final class CustomSegmentedControl: UISegmentedControl {
 //MARK: Actions
 extension CustomSegmentedControl {
     @objc private func reselectSegmentAction() {
+        delegate?.segmentWillBeReselected()
         reselectSegment()
     }
 }
