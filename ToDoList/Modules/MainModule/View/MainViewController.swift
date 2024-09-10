@@ -81,6 +81,9 @@ final class MainViewController: UIViewController {
 //MARK: Actions
 extension MainViewController {
     @objc private func segmentedControlAction(_ control: CustomSegmentedControl) {
+        let indexPath = IndexPath(row: 0, section: 0
+        )
+        tableView.scrollToRow(at: indexPath, at: .top, animated: false)
         tableView.reloadData()
     }
     
@@ -191,8 +194,19 @@ extension MainViewController {
 //MARK: UITableViewDataSource
 extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let count = presenter?.remindersCount() ?? 0
-        return count
+        var count: Int?
+        switch segmentedControl.selectedSegmentIndex {
+        case 0:
+            count = presenter?.remindersCount()
+        case 1:
+            count = presenter?.notCompletedRemindersCount()
+        case 2:
+            count = presenter?.completedRemindersCount()
+        default:
+            break
+        }
+        
+        return count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -214,9 +228,12 @@ extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, 
                    commit editingStyle: UITableViewCell.EditingStyle,
                    forRowAt indexPath: IndexPath) {
-        
         presenter?.deleteReminder(for: indexPath.row)
+        
+        tableView.beginUpdates()
         tableView.deleteRows(at: [indexPath], with: .right)
+        tableView.endUpdates()
+        
         reloadSegmentedControl()
     }
 }

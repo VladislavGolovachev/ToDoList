@@ -146,9 +146,7 @@ extension MainPresenter: MainViewPresenterProtocol {
     }
     
     func remindersCount() -> Int {
-        let state = reminderState()
-        let count = interactor.remindersCount(ofReminders: state)
-        
+        let count = interactor.remindersCount(ofReminders: .notSpecified)
         return count
     }
     
