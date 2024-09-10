@@ -284,9 +284,25 @@ extension MainViewController: CellDelegateProtocol {
     
     func checkboxStateChanged(of cell: ToDoTableViewCell, 
                               forCheckedState checkboxState: Bool) {
-        guard let index = tableView.indexPath(for: cell)?.row else {return}
+        guard let indexPath = tableView.indexPath(for: cell) else {return}
         
-        presenter?.updateReminder(for: index, for: .isCompleted, with: checkboxState)
+        presenter?.updateReminder(for: indexPath.row, for: .isCompleted, with: checkboxState)
+        
+        var updatesIfNeeded = false
+        switch (segmentedControl.selectedSegmentIndex, checkboxState) {
+        case (1, true):
+            updatesIfNeeded = true
+        case (2, false):
+            updatesIfNeeded = true
+        default: break
+        }
+        
+        if updatesIfNeeded {
+            tableView.beginUpdates()
+            tableView.deleteRows(at: [indexPath], with: .fade)
+            tableView.endUpdates()
+        }
+        reloadSegmentedControl()
     }
     
     func updateHeightOfRow(cell: UITableViewCell) {
