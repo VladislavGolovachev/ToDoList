@@ -9,6 +9,12 @@ import UIKit
 
 protocol CellDelegateProtocol: AnyObject {
     func updateHeightOfRow(cell: UITableViewCell)
+    
+    func reminderChanged(of cell: ToDoTableViewCell, for reminder: String)
+    func descriptionChanged(of cell: ToDoTableViewCell, for description: String)
+    func dateBeginEditing(of cell: ToDoTableViewCell)
+    func timeBeginEditing(of cell: ToDoTableViewCell)
+    func checkboxStateChanged(of cell: ToDoTableViewCell, forCheckedState: Bool)
 }
 
 final class ToDoTableViewCell: UITableViewCell {
@@ -122,11 +128,8 @@ final class ToDoTableViewCell: UITableViewCell {
 //MARK: Actions
 extension ToDoTableViewCell {
     @objc private func action(_ sender: UIButton) {
-        if sender.tag == 0 {
-            setReminderCheckedState(.checked)
-            return
-        }
-        setReminderCheckedState(.unchecked)
+        guard let state = CheckboxState(rawValue: 1 - sender.tag) else {return}
+        setReminderCheckedState(state)
     }
 }
 //MARK: Public Functions
@@ -160,9 +163,11 @@ extension ToDoTableViewCell {
 extension ToDoTableViewCell {
     private func setReminderCheckedState(_ state: CheckboxState) {
         var name: String
+        var flag = false
         if state == .checked {
             name = CheckboxConstants.ImageName.checked
             checkboxButton.tag = CheckboxState.checked.rawValue
+            flag = true
         } else {
             name = CheckboxConstants.ImageName.unchecked
             checkboxButton.tag = CheckboxState.unchecked.rawValue
@@ -170,6 +175,8 @@ extension ToDoTableViewCell {
         
         let image = UIImage(named: name)
         checkboxButton.setImage(image, for: .normal)
+        
+        cellDelegate?.checkboxStateChanged(of: self, forCheckedState: flag)
     }
     
     private func addSubviews() {

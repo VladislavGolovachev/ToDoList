@@ -262,6 +262,33 @@ extension MainViewController: MainViewProtocol {
 
 //MARK: CellDelegateProtocol
 extension MainViewController: CellDelegateProtocol {
+    func reminderChanged(of cell: ToDoTableViewCell, for reminder: String) {
+        guard let index = tableView.indexPath(for: cell)?.row else {return}
+        
+        presenter?.updateReminder(for: index, for: .reminder, with: reminder)
+    }
+    
+    func descriptionChanged(of cell: ToDoTableViewCell, for description: String) {
+        guard let index = tableView.indexPath(for: cell)?.row else {return}
+        
+        presenter?.updateReminder(for: index, for: .reminder, with: description)
+    }
+    
+    func dateBeginEditing(of cell: ToDoTableViewCell) {
+        guard let index = tableView.indexPath(for: cell)?.row else {return}
+    }
+    
+    func timeBeginEditing(of cell: ToDoTableViewCell) {
+        guard let index = tableView.indexPath(for: cell)?.row else {return}
+    }
+    
+    func checkboxStateChanged(of cell: ToDoTableViewCell, 
+                              forCheckedState checkboxState: Bool) {
+        guard let index = tableView.indexPath(for: cell)?.row else {return}
+        
+        presenter?.updateReminder(for: index, for: .isCompleted, with: checkboxState)
+    }
+    
     func updateHeightOfRow(cell: UITableViewCell) {
         UIView.setAnimationsEnabled(false)
         tableView.beginUpdates()

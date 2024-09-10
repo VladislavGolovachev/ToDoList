@@ -112,7 +112,7 @@ extension TodoManager {
                                               ascending: true)
         let sortDescriptor1 = NSSortDescriptor(key: TodoKeys.date.rawValue,
                                                ascending: false)
-        let sortDescriptor2 = NSSortDescriptor(key: TodoKeys.creationDate.rawValue,
+        let sortDescriptor2 = NSSortDescriptor(key: TodoKeys.modificationDate.rawValue,
                                                ascending: false)
         
         let request = TodoEntity.fetchRequest()
