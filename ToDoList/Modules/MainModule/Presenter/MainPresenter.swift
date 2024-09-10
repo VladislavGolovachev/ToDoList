@@ -15,6 +15,9 @@ protocol MainViewProtocol: AnyObject {
 protocol MainViewPresenterProtocol: AnyObject {
     init(view: MainViewProtocol, interactor: MainInteractorInputProtocol, router: RouterProtocol)
     func loadInitialReminders()
+    
+    func addNewReminder()
+    func updateReminder(for index: Int, for item: TodoKeys, with value: Any)
     func deleteReminder(for index: Int)
     
     func currentDate() -> String
@@ -68,6 +71,18 @@ extension MainPresenter {
 extension MainPresenter: MainViewPresenterProtocol {
     func loadInitialReminders() {
         interactor.loadInitialReminders()
+    }
+    
+    func addNewReminder() {
+        let creationDate = Date.now
+        interactor.addNewReminder()
+    }
+    
+    func updateReminder(for index: Int, for item: TodoKeys, with value: Any) {
+        let state = reminderState()
+        let dict = [item.rawValue: value]
+        
+//        interactor.updateReminder(for: index, amongReminders: state, with: keyedValues)
     }
     
     func deleteReminder(for index: Int) {

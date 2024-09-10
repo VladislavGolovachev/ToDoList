@@ -17,6 +17,7 @@ protocol MainInteractorInputProtocol: AnyObject {
     
     func todoProperty(for index: Int, amongReminders: ReminderState, property: TodoKeys) -> Any?
     func remindersCount(ofReminders: ReminderState) -> Int
+    func addNewReminder()
     func deleteReminder(for: Int, amongReminders: ReminderState)
 }
 
@@ -33,6 +34,20 @@ final class MainInteractor {
 
 //MARK: MainInteractorInputProtocol
 extension MainInteractor: MainInteractorInputProtocol {
+    func addNewReminder() {
+        let dict: [TodoKeys: Any] = [
+            .reminder: "New reminder",
+            .isCompleted: false,
+            .creationDate: Date.now
+        ]
+        
+        do {
+            try dataManager.createTodo(with: dict)
+        } catch {
+            handleStorageError(error)
+        }
+    }
+    
     func deleteReminder(for index: Int, amongReminders state: ReminderState) {
         print("Deleting")
         do {

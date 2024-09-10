@@ -67,8 +67,8 @@ final class MainViewController: UIViewController {
         }
         
         segmentedControl.addTarget(self, action: #selector(segmentedControlAction(_:)), for: .valueChanged)
-        newTaskButton.addTarget(self, action: #selector(newTaskButtonAction2(_:)), for: .touchUpInside)
-        newTaskButton.addTarget(self, action: #selector(newTaskButtonAction(_:)), for: .touchDown)
+        newTaskButton.addTarget(self, action: #selector(newTaskButtonAction(_:)), for: .touchUpInside)
+        newTaskButton.addTarget(self, action: #selector(newTaskButtonAnimation(_:)), for: .touchDown)
         
         tableView.dataSource = self
         tableView.delegate = self
@@ -81,17 +81,24 @@ final class MainViewController: UIViewController {
 //MARK: Actions
 extension MainViewController {
     @objc private func segmentedControlAction(_ control: CustomSegmentedControl) {
-        let indexPath = IndexPath(row: 0, section: 0
-        )
+        let indexPath = IndexPath(row: 0, section: 0)
+        
         tableView.scrollToRow(at: indexPath, at: .top, animated: false)
         tableView.reloadData()
     }
     
-    @objc private func newTaskButtonAction2(_ button: UIButton) {
+    @objc private func newTaskButtonAction(_ button: UIButton) {
         print("Button tapped")
+        presenter?.addNewReminder()
+        reloadSegmentedControl()
+        
+        let indexPath = IndexPath(row: 0, section: 0)
+        tableView.beginUpdates()
+        tableView.insertRows(at: [indexPath], with: .top)
+        tableView.endUpdates()
     }
     
-    @objc private func newTaskButtonAction(_ button: UIButton) {
+    @objc private func newTaskButtonAnimation(_ button: UIButton) {
         UIView.animate(withDuration: 0.1) {
             button.backgroundColor = ColorConstants.buttonBackground.withAlphaComponent(0.3)
             button.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
@@ -164,30 +171,18 @@ extension MainViewController {
         if let time = presenter?.time(for: row) {
             cell.setTime(time)
         }
-        if let presenter {
-            print(presenter.reminder(for: row))
-            print(presenter.description(for: row))
-            print(presenter.isCompleted(for: row))
-            print(presenter.date(for: row))
-            print(presenter.time(for: row))
-            print()
-        }
     }
     
     private func reloadSegmentedControl() {
         if let count = presenter?.remindersCount() {
-            print(count)
             segmentedControl.setRemindersAmount(String(count), forSegment: 0)
         }
         if let count = presenter?.notCompletedRemindersCount() {
-            print(count)
             segmentedControl.setRemindersAmount(String(count), forSegment: 1)
         }
         if let count = presenter?.completedRemindersCount() {
-            print(count)
             segmentedControl.setRemindersAmount(String(count), forSegment: 2)
         }
-        print()
     }
 }
 

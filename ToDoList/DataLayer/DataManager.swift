@@ -10,6 +10,7 @@ import Foundation
 protocol DataManagerProtocol {
     var isFirstLaunch: Bool {get}
     
+    func createTodo(with keyedValues: [TodoKeys: Any]) throws
     func fetchTodo(for index: Int, amongReminders: ReminderState) throws -> TodoEntity
     func updateTodo(for index: Int, amongReminders: ReminderState,
                     with keyedValues: [TodoKeys: Any]) throws
@@ -28,6 +29,10 @@ final class DataManager: DataManagerProtocol {
         UserDefaults.standard.setValue(true, forKey: key)
         
         return !isNotFirstLaunch
+    }
+    
+    func createTodo(with keyedValues: [TodoKeys: Any]) throws {
+        try todoManager.persist(with: converted(keyedValues))
     }
     
     func fetchTodo(for index: Int, amongReminders state: ReminderState) throws -> TodoEntity {

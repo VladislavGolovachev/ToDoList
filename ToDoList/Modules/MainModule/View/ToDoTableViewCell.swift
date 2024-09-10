@@ -296,7 +296,7 @@ extension ToDoTableViewCell {
     private enum DefaultTextConstant {
         static let initialReminder = "New reminder"
         static let reusableReminder = ""
-        static let description = "Notes"
+        static let description = "Add note"
         static let date = "Set a date"
         static let time = "Set time"
     }
