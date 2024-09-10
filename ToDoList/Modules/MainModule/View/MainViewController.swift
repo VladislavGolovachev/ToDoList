@@ -63,7 +63,7 @@ final class MainViewController: UIViewController {
     //MARK: ViewController LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        presenter?.loadInitialReminders()
+//        presenter?.loadInitialReminders()
         
         view.backgroundColor = MainViewConstants.backgroundColor
         
@@ -88,10 +88,13 @@ extension MainViewController {
             segmentedControl.selectedSegmentIndex = 0
             reloadTableAccordingToSegmentedControl()
         }
-        
+        if tableViewCount(for: segmentedControl.selectedSegmentIndex) != 0 {
+            print(segmentedControl.selectedSegmentIndex, tableViewCount(for: segmentedControl.selectedSegmentIndex))
+            tableView.scrollToRow(at: indexPathZero, at: .top, animated: true)
+        }
         presenter?.addNewReminder()
-
-        tableView.scrollToRow(at: indexPathZero, at: .top, animated: false)
+        
+        
         reloadSegmentedControl()
         
         tableView.beginUpdates()
@@ -114,7 +117,7 @@ extension MainViewController {
 
 //MARK: Private Functions and Computed Properties
 extension MainViewController {
-    var indexPathZero: IndexPath {
+    private var indexPathZero: IndexPath {
         IndexPath(row: 0, section: 0)
     }
     
@@ -194,11 +197,11 @@ extension MainViewController {
     
     private func reloadTableAccordingToSegmentedControl() {
         tableView.reloadData()
+        
         let count = tableViewCount(for: segmentedControl.selectedSegmentIndex)
         if count == 0 {
             return
         }
-        
         tableView.scrollToRow(at: indexPathZero, at: .top, animated: false)
     }
     
@@ -239,7 +242,7 @@ extension MainViewController: UITableViewDataSource {
                                                  for: indexPath)
         as? ToDoTableViewCell ?? ToDoTableViewCell()
         
-        cell.cellDelegate = self
+        cell.delegate = self
         customizeCell(cell, at: indexPath.row)
         
         return cell
@@ -255,7 +258,7 @@ extension MainViewController: UITableViewDataSource {
         presenter?.deleteReminder(for: indexPath.row)
         
         tableView.beginUpdates()
-        tableView.deleteRows(at: [indexPath], with: .right)
+        tableView.deleteRows(at: [indexPath], with: .automatic)
         tableView.endUpdates()
         
         reloadSegmentedControl()
@@ -284,29 +287,11 @@ extension MainViewController: CellDelegateProtocol {
     func reminderChanged(of cell: ToDoTableViewCell, for reminder: String) {
         guard let indexPath = tableView.indexPath(for: cell) else {return}
         presenter?.updateReminder(for: indexPath.row, for: .reminder, with: reminder)
-        
-        if indexPathZero == indexPath {
-            return
-        }
-        
-        tableView.beginUpdates()
-        tableView.deleteRows(at: [indexPath], with: .top)
-        tableView.insertRows(at: [indexPathZero], with: .top)
-        tableView.endUpdates()
     }
     
     func descriptionChanged(of cell: ToDoTableViewCell, for description: String) {
         guard let indexPath = tableView.indexPath(for: cell) else {return}
         presenter?.updateReminder(for: indexPath.row, for: .notes, with: description)
-        
-        if indexPathZero == indexPath {
-            return
-        }
-        
-        tableView.beginUpdates()
-        tableView.deleteRows(at: [indexPath], with: .top)
-        tableView.insertRows(at: [indexPathZero], with: .top)
-        tableView.endUpdates()
     }
     
     func dateBeginEditing(of cell: ToDoTableViewCell) {
@@ -320,26 +305,17 @@ extension MainViewController: CellDelegateProtocol {
     func checkboxStateChanged(of cell: ToDoTableViewCell, 
                               forCheckedState checkboxState: Bool) {
         guard let indexPath = tableView.indexPath(for: cell) else {return}
-        
         presenter?.updateReminder(for: indexPath.row, for: .isCompleted, with: checkboxState)
         
-        //like
-        tableView.beginUpdates()
-        tableView.deleteRows(at: [indexPath], with: .fade)
-        if segmentedControl.selectedSegmentIndex == 0 {
-            if checkboxState == true {
-                guard let count = presenter?.completedRemindersCount() else {return}
-                tableView.insertRows(at: [IndexPath(row: count, section: 0)],
-                                     with: .fade)
-            } else {
-                tableView.insertRows(at: [IndexPath(row: 0, section: 0)],
-                                     with: .fade)
-            }
-            //always to put as the first index of its group
-            //means if i closed the task, so -> openedCount
-            //if i opened the task, so -> 0
+        switch segmentedControl.selectedSegmentIndex {
+        case 1:
+            tableView.deleteRows(at: [indexPath], with: .right)
+        case 2:
+            tableView.deleteRows(at: [indexPath], with: .left)
+        default:
+            tableView.reloadData()
         }
-        tableView.endUpdates()
+        
         reloadSegmentedControl()
     }
     

@@ -33,7 +33,7 @@ final class TodoManager: TodoManagerProtocol {
             
             print(todo?.value(forKey: TodoKeys.reminder.rawValue))
             print(todo?.value(forKey: TodoKeys.notes.rawValue))
-            print(todo?.value(forKey: TodoKeys.modificationDate.rawValue))
+            print(todo?.value(forKey: TodoKeys.creationDate.rawValue))
             print(todo?.value(forKey: TodoKeys.date.rawValue))
             print(todo?.value(forKey: TodoKeys.isCompleted.rawValue))
             print("////////////////////////////////")
@@ -42,7 +42,7 @@ final class TodoManager: TodoManagerProtocol {
             
             print(todo?.value(forKey: TodoKeys.reminder.rawValue))
             print(todo?.value(forKey: TodoKeys.notes.rawValue))
-            print(todo?.value(forKey: TodoKeys.modificationDate.rawValue))
+            print(todo?.value(forKey: TodoKeys.creationDate.rawValue))
             print(todo?.value(forKey: TodoKeys.date.rawValue))
             print(todo!.value(forKey: TodoKeys.isCompleted.rawValue))
             print()
@@ -123,15 +123,13 @@ extension TodoManager {
     }
     
     private func request() -> NSFetchRequest<TodoEntity> {
-        let sortDescriptor = NSSortDescriptor(key: TodoKeys.isCompleted.rawValue,
+        let sortDescriptor1 = NSSortDescriptor(key: TodoKeys.isCompleted.rawValue,
                                               ascending: true)
-        let sortDescriptor1 = NSSortDescriptor(key: TodoKeys.date.rawValue,
-                                               ascending: false)
-        let sortDescriptor2 = NSSortDescriptor(key: TodoKeys.modificationDate.rawValue,
+        let sortDescriptor2 = NSSortDescriptor(key: TodoKeys.creationDate.rawValue,
                                                ascending: false)
         
         let request = TodoEntity.fetchRequest()
-        request.sortDescriptors = [sortDescriptor, sortDescriptor1, sortDescriptor2]
+        request.sortDescriptors = [sortDescriptor1, sortDescriptor2]
         
         return request
     }

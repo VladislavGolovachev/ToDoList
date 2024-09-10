@@ -16,7 +16,7 @@ extension TodoEntity {
     }
 
     @NSManaged public var date: Date?
-    @NSManaged public var modificationDate: Date
+    @NSManaged public var creationDate: Date
     @NSManaged public var isCompleted: Bool
     @NSManaged public var notes: String?
     @NSManaged public var reminder: String?

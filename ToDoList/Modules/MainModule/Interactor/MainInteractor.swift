@@ -39,7 +39,7 @@ extension MainInteractor: MainInteractorInputProtocol {
         let dict: [TodoKeys: Any] = [
             .reminder: "New reminder",
             .isCompleted: false,
-            .modificationDate: Date.now
+            .creationDate: Date.now
         ]
         
         do {
@@ -53,7 +53,6 @@ extension MainInteractor: MainInteractorInputProtocol {
                         amongReminders state: ReminderState,
                         with keyedValues: [TodoKeys: Any]) {
         var keyedValues = keyedValues
-        keyedValues[.modificationDate] = Date.now
         do {
             try dataManager.updateTodo(for: index, amongReminders: state, with: keyedValues)
         } catch {

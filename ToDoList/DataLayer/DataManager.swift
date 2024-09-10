@@ -63,11 +63,13 @@ final class DataManager: DataManagerProtocol {
     }
     
     func saveTodos(_ todos: [DummyTodo], date: Date) throws {
-        for todo in todos {
+        
+        for (i, todo) in todos.enumerated() {
+            let milliSecond = Double(i) / 1000
             let keyedValues: [TodoKeys: Any] = [
                 .reminder:      todo.reminder,
                 .isCompleted:   todo.isCompleted,
-                .modificationDate:  date
+                .creationDate:  date + milliSecond
             ]
             try todoManager.persist(with: converted(keyedValues))
         }

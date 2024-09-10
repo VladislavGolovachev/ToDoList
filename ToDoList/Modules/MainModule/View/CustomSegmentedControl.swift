@@ -8,6 +8,7 @@
 import UIKit
 
 final class CustomSegmentedControl: UISegmentedControl {
+    //MARK: Properties
     private lazy var segmentLabels = {
         var array = [UILabel]()
         for index in 0...2 {
@@ -16,16 +17,11 @@ final class CustomSegmentedControl: UISegmentedControl {
         return array
     }()
     
-    override var selectedSegmentIndex: Int {
-        didSet {
-            reselectSegment()
-        }
-    }
+    private var previousSelectedSegmentIndex = 0
     
+    //MARK: Inits
     init() {
         super.init(frame: CGRectZero)
-        
-        addTarget(self, action: #selector(reselectSegmentAction), for: .valueChanged)
         
         backgroundColor = MainViewConstants.backgroundColor
         setTitleTextAttributes([.foregroundColor: ColorConstants.notSelected, .font: SegmentConstants.font],
@@ -49,15 +45,27 @@ final class CustomSegmentedControl: UISegmentedControl {
         super.init(coder: coder)
     }
     
-    func setRemindersAmount(_ amount: String, forSegment index: Int) {
-        segmentLabels[index].text = amount
+    //MARK: Overriden Functions
+    override func willChangeValue(forKey key: String) {
+        previousSelectedSegmentIndex = selectedSegmentIndex
+        super.willChangeValue(forKey: key)
+    }
+    
+    override func didChangeValue(forKey key: String) {
+        super.didChangeValue(forKey: key)
+        reselectSegment()
     }
 }
 
-//MARK: Actions
+//MARK: Public Functions and Computed Properties
 extension CustomSegmentedControl {
-    @objc private func reselectSegmentAction() {
-        reselectSegment()
+    var isChangedSelectedIndexAscending: Bool {
+        let difference = selectedSegmentIndex - previousSelectedSegmentIndex
+        return (difference > 0 ? true : false)
+    }
+    
+    func setRemindersAmount(_ amount: String, forSegment index: Int) {
+        segmentLabels[index].text = amount
     }
 }
 
