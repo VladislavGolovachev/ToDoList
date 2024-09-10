@@ -15,8 +15,9 @@ protocol MainInteractorOutputProtocol: AnyObject {
 protocol MainInteractorInputProtocol: AnyObject {
     func loadInitialReminders()
     
-    func todoProperty(for index: Int, property: TodoKeys, isCompleted: Bool?) -> Any?
-    func remindersCount(areForCompleted areCompleted: Bool?) -> Int
+    func todoProperty(for index: Int, amongReminders: ReminderState, property: TodoKeys) -> Any?
+    func remindersCount(ofReminders: ReminderState) -> Int
+    func deleteReminder(for: Int, amongReminders: ReminderState)
 }
 
 //MARK: MainInteractor
@@ -32,10 +33,19 @@ final class MainInteractor {
 
 //MARK: MainInteractorInputProtocol
 extension MainInteractor: MainInteractorInputProtocol {
-    func remindersCount(areForCompleted areCompleted: Bool?) -> Int {
+    func deleteReminder(for index: Int, amongReminders state: ReminderState) {
+        print("Deleting")
+        do {
+            try dataManager.deleteTodo(for: index, amongReminders: state)
+        } catch {
+            handleStorageError(error)
+        }
+    }
+    
+    func remindersCount(ofReminders state: ReminderState) -> Int {
         var count = 0
         do {
-            count = try dataManager.getTodosCount(areForCompleted: areCompleted)
+            count = try dataManager.getTodosCount(ofReminders: state)
         } catch {
             handleStorageError(error)
             return 0
@@ -44,10 +54,10 @@ extension MainInteractor: MainInteractorInputProtocol {
         return count
     }
     
-    func todoProperty(for index: Int, property: TodoKeys, isCompleted: Bool?) -> Any? {
+    func todoProperty(for index: Int, amongReminders state: ReminderState, property: TodoKeys) -> Any? {
         var todo: TodoEntity
         do {
-            todo = try dataManager.fetchTodo(for: index, isCompleted: isCompleted)
+            todo = try dataManager.fetchTodo(for: index, amongReminders: state)
         } catch {
             handleStorageError(error)
             return nil

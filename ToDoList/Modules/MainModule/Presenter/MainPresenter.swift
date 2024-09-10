@@ -48,18 +48,18 @@ final class MainPresenter {
 
 //MARK: Private Functions
 extension MainPresenter {
-    private func isCompleted() -> Bool? {
+    private func reminderState() -> ReminderState {
         guard let index = view?.selectedIndexOfSegmentedControl else {
-            return nil
+            return .notSpecified
         }
         
         switch index {
         case 1:
-            return false
+            return .notCompleted
         case 2:
-            return true
+            return .completed
         default:
-            return nil
+            return .notSpecified
         }
     }
 }
@@ -71,7 +71,8 @@ extension MainPresenter: MainViewPresenterProtocol {
     }
     
     func deleteReminder(for index: Int) {
-        
+        let state = reminderState()
+        interactor.deleteReminder(for: index, amongReminders: state)
     }
     
     func currentDate() -> String {
@@ -84,30 +85,34 @@ extension MainPresenter: MainViewPresenterProtocol {
     }
     
     func reminder(for index: Int) -> String? {
+        let state = reminderState()
         let reminder = interactor.todoProperty(for: index,
-                                               property: .reminder,
-                                               isCompleted: isCompleted()) as? String
+                                               amongReminders: state,
+                                               property: .reminder) as? String
         return reminder
     }
     
     func description(for index: Int) -> String? {
-        let notes = interactor.todoProperty(for: index, 
-                                            property: .notes,
-                                            isCompleted: isCompleted()) as? String
+        let state = reminderState()
+        let notes = interactor.todoProperty(for: index,
+                                            amongReminders: state,
+                                            property: .notes) as? String
         return notes
     }
     
     func isCompleted(for index: Int) -> Bool {
-        let isCompleted = interactor.todoProperty(for: index, 
-                                                  property: .isCompleted,
-                                                  isCompleted: isCompleted()) as? Bool
+        let state = reminderState()
+        let isCompleted = interactor.todoProperty(for: index,
+                                                  amongReminders: state,
+                                                  property: .isCompleted) as? Bool
         return isCompleted ?? false
     }
     
     func date(for index: Int) -> String? {
-        guard let date = interactor.todoProperty(for: index, 
-                                                 property: .date,
-                                                 isCompleted: isCompleted()) as? Date else {return nil}
+        let state = reminderState()
+        guard let date = interactor.todoProperty(for: index,
+                                                 amongReminders: state,
+                                                 property: .date) as? Date else {return nil}
         
         switch true {
         case Calendar.current.isDateInYesterday(date):
@@ -129,9 +134,10 @@ extension MainPresenter: MainViewPresenterProtocol {
     }
     
     func time(for index: Int) -> String? {
+        let state = reminderState()
         guard let date = interactor.todoProperty(for: index,
-                                                 property: .date,
-                                                 isCompleted: isCompleted()) as? Date else {return nil}
+                                                 amongReminders: state,
+                                                 property: .date) as? Date else {return nil}
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "h:mm a"
         let timeString = dateFormatter.string(from: date)
@@ -140,19 +146,19 @@ extension MainPresenter: MainViewPresenterProtocol {
     }
     
     func remindersCount() -> Int {
-        let areCompleted = isCompleted()
-        let count = interactor.remindersCount(areForCompleted: areCompleted)
+        let state = reminderState()
+        let count = interactor.remindersCount(ofReminders: state)
         
         return count
     }
     
     func completedRemindersCount() -> Int {
-        let count = interactor.remindersCount(areForCompleted: true)
+        let count = interactor.remindersCount(ofReminders: .completed)
         return count
     }
     
     func notCompletedRemindersCount() -> Int {
-        let count = interactor.remindersCount(areForCompleted: false)
+        let count = interactor.remindersCount(ofReminders: .notCompleted)
         return count
     }
 }

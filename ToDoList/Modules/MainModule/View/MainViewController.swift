@@ -170,12 +170,28 @@ extension MainViewController {
             print()
         }
     }
+    
+    private func reloadSegmentedControl() {
+        if let count = presenter?.remindersCount() {
+            print(count)
+            segmentedControl.setRemindersAmount(String(count), forSegment: 0)
+        }
+        if let count = presenter?.notCompletedRemindersCount() {
+            print(count)
+            segmentedControl.setRemindersAmount(String(count), forSegment: 1)
+        }
+        if let count = presenter?.completedRemindersCount() {
+            print(count)
+            segmentedControl.setRemindersAmount(String(count), forSegment: 2)
+        }
+        print()
+    }
 }
 
 //MARK: UITableViewDataSource
 extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        var count = presenter?.remindersCount() ?? 0
+        let count = presenter?.remindersCount() ?? 0
         return count
     }
     
@@ -199,6 +215,9 @@ extension MainViewController: UITableViewDataSource {
                    commit editingStyle: UITableViewCell.EditingStyle,
                    forRowAt indexPath: IndexPath) {
         
+        presenter?.deleteReminder(for: indexPath.row)
+        tableView.deleteRows(at: [indexPath], with: .right)
+        reloadSegmentedControl()
     }
 }
 
@@ -214,16 +233,7 @@ extension MainViewController: MainViewProtocol {
     }
     
     func reload() {
-        if let count = presenter?.remindersCount() {
-            segmentedControl.setRemindersAmount(String(count), forSegment: 0)
-        }
-        if let count = presenter?.notCompletedRemindersCount() {
-            segmentedControl.setRemindersAmount(String(count), forSegment: 1)
-        }
-        if let count = presenter?.completedRemindersCount() {
-            segmentedControl.setRemindersAmount(String(count), forSegment: 2)
-        }
-        
+        reloadSegmentedControl()
         tableView.reloadData()
     }
 }

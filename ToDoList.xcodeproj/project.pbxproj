@@ -21,7 +21,7 @@
 		820E5C9E2C87614E005FD12B /* MainPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820E5C9D2C87614E005FD12B /* MainPresenter.swift */; };
 		820E5CA02C876159005FD12B /* MainInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820E5C9F2C876158005FD12B /* MainInteractor.swift */; };
 		820E5CA42C87AAB0005FD12B /* ToDoTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820E5CA32C87AAB0005FD12B /* ToDoTableViewCell.swift */; };
-		820E5CA72C87AB0B005FD12B /* MainViewConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820E5CA62C87AB0B005FD12B /* MainViewConstants.swift */; };
+		820E5CA72C87AB0B005FD12B /* MainModuleConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820E5CA62C87AB0B005FD12B /* MainModuleConstants.swift */; };
 		821B41222C8B0F850094213E /* PaddingLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 821B41212C8B0F850094213E /* PaddingLabel.swift */; };
 		821B41262C8B15AF0094213E /* CustomSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 821B41252C8B15AF0094213E /* CustomSegmentedControl.swift */; };
 		821B41292C8B1E4E0094213E /* UIImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 821B41282C8B1E4E0094213E /* UIImageExtension.swift */; };
@@ -57,7 +57,7 @@
 		820E5C9D2C87614E005FD12B /* MainPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainPresenter.swift; sourceTree = "<group>"; };
 		820E5C9F2C876158005FD12B /* MainInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainInteractor.swift; sourceTree = "<group>"; };
 		820E5CA32C87AAB0005FD12B /* ToDoTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToDoTableViewCell.swift; sourceTree = "<group>"; };
-		820E5CA62C87AB0B005FD12B /* MainViewConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewConstants.swift; sourceTree = "<group>"; };
+		820E5CA62C87AB0B005FD12B /* MainModuleConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainModuleConstants.swift; sourceTree = "<group>"; };
 		821B41212C8B0F850094213E /* PaddingLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingLabel.swift; sourceTree = "<group>"; };
 		821B41252C8B15AF0094213E /* CustomSegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSegmentedControl.swift; sourceTree = "<group>"; };
 		821B41282C8B1E4E0094213E /* UIImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtension.swift; sourceTree = "<group>"; };
@@ -201,7 +201,7 @@
 		820E5CA52C87AAF2005FD12B /* Constants */ = {
 			isa = PBXGroup;
 			children = (
-				820E5CA62C87AB0B005FD12B /* MainViewConstants.swift */,
+				820E5CA62C87AB0B005FD12B /* MainModuleConstants.swift */,
 			);
 			name = Constants;
 			path = ..;
@@ -371,7 +371,7 @@
 				821B41292C8B1E4E0094213E /* UIImageExtension.swift in Sources */,
 				820187A22C8C47A300D2610E /* DataManager.swift in Sources */,
 				82B1B5992C8BB055008AB69C /* EndPointType.swift in Sources */,
-				820E5CA72C87AB0B005FD12B /* MainViewConstants.swift in Sources */,
+				820E5CA72C87AB0B005FD12B /* MainModuleConstants.swift in Sources */,
 				820187AB2C8D0E0400D2610E /* StorageError.swift in Sources */,
 				820E5CA42C87AAB0005FD12B /* ToDoTableViewCell.swift in Sources */,
 				820187CE2C8D265900D2610E /* TodoManager.swift in Sources */,
