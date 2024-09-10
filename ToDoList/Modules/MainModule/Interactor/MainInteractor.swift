@@ -18,7 +18,8 @@ protocol MainInteractorInputProtocol: AnyObject {
     func todoProperty(for index: Int, amongReminders: ReminderState, property: TodoKeys) -> Any?
     func remindersCount(ofReminders: ReminderState) -> Int
     func addNewReminder()
-    func deleteReminder(for: Int, amongReminders: ReminderState)
+    func updateReminder(for index: Int, amongReminders: ReminderState, with: [TodoKeys: Any])
+    func deleteReminder(for index: Int, amongReminders: ReminderState)
 }
 
 //MARK: MainInteractor
@@ -43,6 +44,16 @@ extension MainInteractor: MainInteractorInputProtocol {
         
         do {
             try dataManager.createTodo(with: dict)
+        } catch {
+            handleStorageError(error)
+        }
+    }
+    
+    func updateReminder(for index: Int, 
+                        amongReminders state: ReminderState,
+                        with keyedValues: [TodoKeys: Any]) {
+        do {
+            try dataManager.updateTodo(for: index, amongReminders: state, with: keyedValues)
         } catch {
             handleStorageError(error)
         }

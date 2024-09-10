@@ -16,10 +16,16 @@ final class CustomSegmentedControl: UISegmentedControl {
         return array
     }()
     
+    override var selectedSegmentIndex: Int {
+        didSet {
+            reselectSegment()
+        }
+    }
+    
     init() {
         super.init(frame: CGRectZero)
         
-        addTarget(self, action: #selector(changeColorAction(_:)), for: .valueChanged)
+        addTarget(self, action: #selector(reselectSegmentAction), for: .valueChanged)
         
         backgroundColor = MainViewConstants.backgroundColor
         setTitleTextAttributes([.foregroundColor: ColorConstants.notSelected, .font: SegmentConstants.font],
@@ -50,16 +56,20 @@ final class CustomSegmentedControl: UISegmentedControl {
 
 //MARK: Actions
 extension CustomSegmentedControl {
-    @objc private func changeColorAction(_ control: UISegmentedControl) {
-        segmentLabels.forEach {
-            $0.backgroundColor = ColorConstants.notSelected
-        }
-        segmentLabels[control.selectedSegmentIndex].backgroundColor = ColorConstants.selected
+    @objc private func reselectSegmentAction() {
+        reselectSegment()
     }
 }
 
 //MARK: Private Functions
 extension CustomSegmentedControl {
+    private func reselectSegment() {
+        segmentLabels.forEach {
+            $0.backgroundColor = ColorConstants.notSelected
+        }
+        segmentLabels[self.selectedSegmentIndex].backgroundColor = ColorConstants.selected
+    }
+    
     private func addSubviews() {
         for label in segmentLabels {
             addSubview(label)

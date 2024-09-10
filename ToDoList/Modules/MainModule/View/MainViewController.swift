@@ -81,18 +81,21 @@ final class MainViewController: UIViewController {
 //MARK: Actions
 extension MainViewController {
     @objc private func segmentedControlAction(_ control: CustomSegmentedControl) {
-        let indexPath = IndexPath(row: 0, section: 0)
-        
-        tableView.scrollToRow(at: indexPath, at: .top, animated: false)
-        tableView.reloadData()
+        reloadTableAccordingToSegmentedControl()
     }
     
     @objc private func newTaskButtonAction(_ button: UIButton) {
-        print("Button tapped")
+        if segmentedControl.selectedSegmentIndex == 2 {
+            segmentedControl.selectedSegmentIndex = 0
+            reloadTableAccordingToSegmentedControl()
+        }
+        
         presenter?.addNewReminder()
+
+        let indexPath = IndexPath(row: 0, section: 0)
+        tableView.scrollToRow(at: indexPath, at: .top, animated: false)
         reloadSegmentedControl()
         
-        let indexPath = IndexPath(row: 0, section: 0)
         tableView.beginUpdates()
         tableView.insertRows(at: [indexPath], with: .top)
         tableView.endUpdates()
@@ -171,6 +174,13 @@ extension MainViewController {
         if let time = presenter?.time(for: row) {
             cell.setTime(time)
         }
+    }
+    
+    private func reloadTableAccordingToSegmentedControl() {
+        let indexPath = IndexPath(row: 0, section: 0)
+        
+        tableView.scrollToRow(at: indexPath, at: .top, animated: false)
+        tableView.reloadData()
     }
     
     private func reloadSegmentedControl() {

@@ -80,9 +80,9 @@ extension MainPresenter: MainViewPresenterProtocol {
     
     func updateReminder(for index: Int, for item: TodoKeys, with value: Any) {
         let state = reminderState()
-        let dict = [item.rawValue: value]
+        let keyedValues = [item: value]
         
-//        interactor.updateReminder(for: index, amongReminders: state, with: keyedValues)
+        interactor.updateReminder(for: index, amongReminders: state, with: keyedValues)
     }
     
     func deleteReminder(for index: Int) {
