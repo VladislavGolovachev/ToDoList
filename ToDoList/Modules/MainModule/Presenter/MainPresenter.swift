@@ -74,7 +74,6 @@ extension MainPresenter: MainViewPresenterProtocol {
     }
     
     func addNewReminder() {
-        let creationDate = Date.now
         interactor.addNewReminder()
     }
     
