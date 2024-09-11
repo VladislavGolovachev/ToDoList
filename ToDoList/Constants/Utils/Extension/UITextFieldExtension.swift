@@ -8,16 +8,29 @@
 import UIKit
 
 extension UITextField {
-    func setInputViewDatePicker(with pickerMode: UIDatePicker.Mode, with style: UIDatePickerStyle) {
+    func setInputViewDatePicker(withPickerMode pickerMode: UIDatePicker.Mode,
+                                selector: Selector?) {
+        guard let screenWidth = window?.screen.bounds.width else {return}
+        
         let datePicker = UIDatePicker()
-        
-        datePicker.preferredDatePickerStyle = style
+        datePicker.preferredDatePickerStyle = .wheels
         datePicker.datePickerMode = pickerMode
-        datePicker.minimumDate = .now
+        datePicker.locale = Locale(identifier: "en")
         
-        self.inputView = datePicker
+        let toolBar = UIToolbar(frame: CGRect(x: 0, y: 0,
+                                              width: screenWidth,
+                                              height: Constants.toolBarHeight))
+        
+        let flexibleSpace = UIBarButtonItem(systemItem: .flexibleSpace)
+        let barButton = UIBarButtonItem(title: "Done", style: .done,
+                                        target: nil, action: selector)
+        toolBar.setItems([flexibleSpace, barButton], animated: false)
+        
+        inputView = datePicker
+        inputAccessoryView = toolBar
     }
 }
 
-//size
-//handling actions
+fileprivate enum Constants {
+    static let toolBarHeight: Double = 50
+}

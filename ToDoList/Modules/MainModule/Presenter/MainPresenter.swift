@@ -24,12 +24,13 @@ protocol MainViewPresenterProtocol: AnyObject {
     func reminder(for index: Int) -> String?
     func description(for index: Int) -> String?
     func isCompleted(for index: Int) -> Bool
-    func date(for index: Int) -> String?
-    func time(for index: Int) -> String?
+    func date(for index: Int) -> NSAttributedString?
     
     func remindersCount() -> Int
     func completedRemindersCount() -> Int
     func notCompletedRemindersCount() -> Int
+    
+    func stringDate(for: Date) -> NSAttributedString
 }
 
 //MARK: MainPresenter
@@ -64,6 +65,45 @@ extension MainPresenter {
         default:
             return .notSpecified
         }
+    }
+    
+    private func dateAttributedString(from date: Date) -> NSAttributedString {
+        var dateString: String
+        switch true {
+        case Calendar.current.isDateInYesterday(date):
+            dateString = "Yesterday"
+        case Calendar.current.isDateInToday(date):
+            dateString = "Today"
+        case Calendar.current.isDateInTomorrow(date):
+            dateString = "Tomorrow"
+            
+        default:
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "dd.MM.yy"
+            dateString = dateFormatter.string(from: date)
+        }
+        
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: MainViewConstants.Font.date,
+            .foregroundColor: MainViewConstants.Color.date
+        ]
+        let attributedString = NSAttributedString(string: dateString + "   ", attributes: attributes)
+        
+        return attributedString
+    }
+    
+    private func timeAttributedString(from date: Date) -> NSAttributedString {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "hh:mma"
+        let timeString = dateFormatter.string(from: date)
+        
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: MainViewConstants.Font.time,
+            .foregroundColor: MainViewConstants.Color.time
+        ]
+        let attributedString = NSAttributedString(string: timeString, attributes: attributes)
+        
+        return attributedString
     }
 }
 
@@ -122,41 +162,13 @@ extension MainPresenter: MainViewPresenterProtocol {
         return isCompleted ?? false
     }
     
-    func date(for index: Int) -> String? {
+    func date(for index: Int) -> NSAttributedString? {
         let state = reminderState()
         guard let date = interactor.todoProperty(for: index,
                                                  amongReminders: state,
                                                  property: .date) as? Date else {return nil}
         
-        switch true {
-        case Calendar.current.isDateInYesterday(date):
-            return "Yesterday"
-        case Calendar.current.isDateInToday(date):
-            return "Today"
-        case Calendar.current.isDateInTomorrow(date):
-            return "Tomorrow"
-            
-        default: break
-        }
-        
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd:MM:yy"
-        
-        let dateString = dateFormatter.string(from: date)
-        
-        return dateString
-    }
-    
-    func time(for index: Int) -> String? {
-        let state = reminderState()
-        guard let date = interactor.todoProperty(for: index,
-                                                 amongReminders: state,
-                                                 property: .date) as? Date else {return nil}
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "h:mm a"
-        let timeString = dateFormatter.string(from: date)
-        
-        return timeString
+        return stringDate(for: date)
     }
     
     func remindersCount() -> Int {
@@ -172,6 +184,17 @@ extension MainPresenter: MainViewPresenterProtocol {
     func notCompletedRemindersCount() -> Int {
         let count = interactor.remindersCount(ofReminders: .notCompleted)
         return count
+    }
+    
+    func stringDate(for date: Date) -> NSAttributedString {
+        let dateString = dateAttributedString(from: date)
+        let timeString = timeAttributedString(from: date)
+        
+        let mutableString = NSMutableAttributedString()
+        mutableString.append(dateString)
+        mutableString.append(timeString)
+        
+        return mutableString
     }
 }
 

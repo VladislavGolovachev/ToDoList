@@ -52,7 +52,6 @@ extension MainInteractor: MainInteractorInputProtocol {
     func updateReminder(for index: Int, 
                         amongReminders state: ReminderState,
                         with keyedValues: [TodoKeys: Any]) {
-        var keyedValues = keyedValues
         do {
             try dataManager.updateTodo(for: index, amongReminders: state, with: keyedValues)
         } catch {

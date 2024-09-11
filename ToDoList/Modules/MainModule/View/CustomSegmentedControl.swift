@@ -17,13 +17,11 @@ final class CustomSegmentedControl: UISegmentedControl {
         return array
     }()
     
-    private var previousSelectedSegmentIndex = 0
-    
     //MARK: Inits
     init() {
         super.init(frame: CGRectZero)
         
-        backgroundColor = MainViewConstants.backgroundColor
+        backgroundColor = MainViewConstants.Color.background
         setTitleTextAttributes([.foregroundColor: ColorConstants.notSelected, .font: SegmentConstants.font],
                                 for: .normal)
         setTitleTextAttributes([.foregroundColor: ColorConstants.selected, .font: SegmentConstants.font],
@@ -45,25 +43,14 @@ final class CustomSegmentedControl: UISegmentedControl {
         super.init(coder: coder)
     }
     
-    //MARK: Overriden Functions
-    override func willChangeValue(forKey key: String) {
-        previousSelectedSegmentIndex = selectedSegmentIndex
-        super.willChangeValue(forKey: key)
-    }
-    
     override func didChangeValue(forKey key: String) {
         super.didChangeValue(forKey: key)
         reselectSegment()
     }
 }
 
-//MARK: Public Functions and Computed Properties
+//MARK: Public Functions
 extension CustomSegmentedControl {
-    var isChangedSelectedIndexAscending: Bool {
-        let difference = selectedSegmentIndex - previousSelectedSegmentIndex
-        return (difference > 0 ? true : false)
-    }
-    
     func setRemindersAmount(_ amount: String, forSegment index: Int) {
         segmentLabels[index].text = amount
     }
@@ -75,7 +62,7 @@ extension CustomSegmentedControl {
         segmentLabels.forEach {
             $0.backgroundColor = ColorConstants.notSelected
         }
-        segmentLabels[self.selectedSegmentIndex].backgroundColor = ColorConstants.selected
+        segmentLabels[selectedSegmentIndex].backgroundColor = ColorConstants.selected
     }
     
     private func addSubviews() {
@@ -133,7 +120,7 @@ extension CustomSegmentedControl {
     }
     
     private func setBackgroundAndDividerImages() {
-        let blankImage = UIImage.filled(with: MainViewConstants.backgroundColor)
+        let blankImage = UIImage.filled(with: MainViewConstants.Color.background)
         let separatorImage = UIImage.filled(with: ColorConstants.notSelected)
         
         setBackgroundImage(blankImage, for: .normal, barMetrics: .default)

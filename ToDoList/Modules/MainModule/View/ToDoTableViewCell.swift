@@ -12,8 +12,7 @@ protocol CellDelegateProtocol: AnyObject {
     
     func reminderChanged(of cell: ToDoTableViewCell, for reminder: String)
     func descriptionChanged(of cell: ToDoTableViewCell, for description: String)
-    func dateBeginEditing(of cell: ToDoTableViewCell)
-    func timeBeginEditing(of cell: ToDoTableViewCell)
+    func dateNeedsUpdate(of cell: ToDoTableViewCell, for date: Date)
     func checkboxStateChanged(of cell: ToDoTableViewCell, forCheckedState: Bool)
 }
 
@@ -72,39 +71,15 @@ final class ToDoTableViewCell: UITableViewCell {
     }()
     private lazy var dateTextField: UITextField = {
         let textField = UITextField()
-//        textField.delegate = self
-        
-        textField.font = FontConstants.secondary
-        textField.textColor = ColorConstants.Text.secondary
         
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: FontConstants.secondary,
-            .foregroundColor: ColorConstants.Text.secondary
+            .font: FontConstants.placeholder,
+            .foregroundColor: ColorConstants.Text.placeholder
         ]
         let attributedPlaceholder = NSAttributedString(string: DefaultTextConstant.datePlaceholder,
-                                                       attributes: attributes)
+                                                  attributes: attributes)
+        
         textField.attributedPlaceholder = attributedPlaceholder
-        
-        textField.setInputViewDatePicker(with: .date, with: .inline)
-        
-        return textField
-    }()
-    private lazy var timeTextField: UITextField = {
-        let textField = UITextField()
-//        textField.delegate = self
-        
-        textField.font = FontConstants.time
-        textField.textColor = ColorConstants.Text.time
-        
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: FontConstants.time,
-            .foregroundColor: ColorConstants.Text.time
-        ]
-        let attributedPlaceholder = NSAttributedString(string: DefaultTextConstant.timePlaceholder,
-                                                       attributes: attributes)
-        textField.attributedPlaceholder = attributedPlaceholder
-        
-        textField.setInputViewDatePicker(with: .time, with: .wheels)
         
         return textField
     }()
@@ -121,12 +96,12 @@ final class ToDoTableViewCell: UITableViewCell {
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        contentView.backgroundColor = MainViewConstants.backgroundColor
+        contentView.backgroundColor = MainViewConstants.Color.background
         
         reminderTextView.delegate = self
         descriptionTextView.delegate = self
         
-        setActions()
+        checkboxButton.addTarget(self, action: #selector(checkboxChanged(_:)), for: .touchUpInside)
         addSubviews()
         setupConstraints()
     }
@@ -140,8 +115,15 @@ final class ToDoTableViewCell: UITableViewCell {
         reminderTextView.text = DefaultTextConstant.reusableText
         descriptionTextView.text = DefaultTextConstant.description
         dateTextField.text = DefaultTextConstant.reusableText
-        timeTextField.text = DefaultTextConstant.reusableText
         setReminderCheckedState(.unchecked)
+    }
+    
+    override func layoutSubviews() {
+        dateTextField.setInputViewDatePicker(withPickerMode: .dateAndTime,
+                                             selector: #selector(dateChanged))
+        
+        dateTextField.inputView?.overrideUserInterfaceStyle = .light
+        dateTextField.inputAccessoryView?.overrideUserInterfaceStyle = .light
     }
 }
 
@@ -163,43 +145,28 @@ extension ToDoTableViewCell {
         setReminderCheckedState(.unchecked)
     }
     
-    func setDate(_ date: String) {
-        dateTextField.text = date
-    }
-    
-    func setTime(_ time: String) {
-        timeTextField.text = time
+    func setDate(_ date: NSAttributedString) {
+        dateTextField.attributedText = date
     }
 }
 
 //MARK: Actions
 extension ToDoTableViewCell {
+    @objc func dateChanged() {
+        guard let datePicker = dateTextField.inputView as? UIDatePicker else {return}
+        delegate?.dateNeedsUpdate(of: self, for: datePicker.date)
+        
+        dateTextField.resignFirstResponder()
+    }
+    
     @objc private func checkboxChanged(_ sender: UIButton) {
         guard let state = CheckboxState(rawValue: 1 - sender.tag) else {return}
         setReminderCheckedState(state)
-    }
-    
-    @objc private func dateTextFieldAction() {
-        delegate?.dateBeginEditing(of: self)
-    }
-    
-    @objc private func timeTextFieldAction() {
-        delegate?.timeBeginEditing(of: self)
     }
 }
 
 //MARK: Private Functions
 extension ToDoTableViewCell {
-    private func setActions() {
-//        let dateTapGesture = UITapGestureRecognizer(target: self, action: #selector(dateTextFieldAction))
-//        let timeTapGesture = UITapGestureRecognizer(target: self, action: #selector(timeTextFieldAction))
-//        
-//        dateTextField.addGestureRecognizer(dateTapGesture)
-//        timeTextField.addGestureRecognizer(timeTapGesture)
-        
-        checkboxButton.addTarget(self, action: #selector(checkboxChanged(_:)), for: .touchUpInside)
-    }
-    
     private func setReminderCheckedState(_ state: CheckboxState) {
         var name: String
         var flag = false
@@ -223,7 +190,6 @@ extension ToDoTableViewCell {
         backView.addSubview(descriptionTextView)
         backView.addSubview(separatorView)
         backView.addSubview(dateTextField)
-        backView.addSubview(timeTextField)
         backView.addSubview(checkboxButton)
         
         contentView.addSubview(backView)
@@ -272,15 +238,10 @@ extension ToDoTableViewCell {
                                            constant: CellConstants.VerticalSpacing.common),
             dateTextField.leadingAnchor.constraint(equalTo: backViewMargins.leadingAnchor),
             
-            timeTextField.topAnchor.constraint(equalTo: separatorView.bottomAnchor,
-                                           constant: CellConstants.VerticalSpacing.common),
-            timeTextField.leadingAnchor.constraint(equalTo: dateTextField.trailingAnchor,
-                                               constant: CellConstants.HorizontalSpacing.timeLabel),
-            
             checkboxButton.trailingAnchor.constraint(equalTo: backViewMargins.trailingAnchor),
             checkboxButton.centerYAnchor.constraint(equalTo: backView.topAnchor,
                                             constant: CheckboxConstants.centerYOffset),
-            checkboxButton.widthAnchor.constraint(equalToConstant: CheckboxConstants.width),
+            checkboxButton.widthAnchor.constraint(equalToConstant: CheckboxConstants.width)
         ])
     }
 }
@@ -288,7 +249,6 @@ extension ToDoTableViewCell {
 //MARK: UITextViewDelegate
 extension ToDoTableViewCell: UITextViewDelegate {
     func textViewDidEndEditing(_ textView: UITextView) {
-        print("textVIewdidendediting")
         if textView.tag == TextViewTag.reminder {
             delegate?.reminderChanged(of: self, for: textView.text)
             return
@@ -319,7 +279,6 @@ extension ToDoTableViewCell {
         }
         enum HorizontalSpacing {
             static let checkbox = 5.0
-            static let timeLabel = 5.0
         }
     }
     
@@ -330,14 +289,14 @@ extension ToDoTableViewCell {
         enum Text {
             static let primary = UIColor.black
             static let secondary = UIColor.lightGray
-            static let time = UIColor(red: 0.8, green: 0.8, blue: 0.8, alpha: 1)
+            static let placeholder = UIColor(red: 0.8, green: 0.8, blue: 0.8, alpha: 1)
         }
     }
     
     private enum FontConstants {
         static let primary = UIFont.systemFont(ofSize: 17.0, weight: .medium)
         static let secondary = UIFont.systemFont(ofSize: 12.0, weight: .semibold)
-        static let time = UIFont.systemFont(ofSize: 12.0, weight: .medium)
+        static let placeholder = UIFont.systemFont(ofSize: 12.0, weight: .medium)
     }
     
     private enum CheckboxConstants {
@@ -363,7 +322,6 @@ extension ToDoTableViewCell {
         static let initialReminder = "New reminder"
         static let reusableText = ""
         static let description = "Add note"
-        static let datePlaceholder = "Set a date"
-        static let timePlaceholder = "Set time"
+        static let datePlaceholder = "Set date"
     }
 }

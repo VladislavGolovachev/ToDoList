@@ -15,8 +15,10 @@ final class MainViewController: UIViewController {
         tableView.register(ToDoTableViewCell.self,
                            forCellReuseIdentifier: ToDoTableViewCell.reuseIdentifier)
         
-        tableView.backgroundColor = MainViewConstants.backgroundColor
+        tableView.backgroundColor = MainViewConstants.Color.background
         tableView.separatorStyle = .none
+        
+        tableView.showsVerticalScrollIndicator = false
         
         tableView.dataSource = self
         tableView.delegate = self
@@ -63,9 +65,9 @@ final class MainViewController: UIViewController {
     //MARK: ViewController LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-//        presenter?.loadInitialReminders()
+        presenter?.loadInitialReminders()
         
-        view.backgroundColor = MainViewConstants.backgroundColor
+        view.backgroundColor = MainViewConstants.Color.background
         
         setActions()
         addSubviews()
@@ -190,9 +192,6 @@ extension MainViewController {
         if let date = presenter?.date(for: row) {
             cell.setDate(date)
         }
-        if let time = presenter?.time(for: row) {
-            cell.setTime(time)
-        }
     }
     
     private func reloadTableAccordingToSegmentedControl() {
@@ -267,7 +266,12 @@ extension MainViewController: UITableViewDataSource {
 
 //MARK: UITableViewDelegate
 extension MainViewController: UITableViewDelegate {
-    
+    func tableView(_ tableView: UITableView, 
+                   didEndDisplaying cell: UITableViewCell,
+                   forRowAt indexPath: IndexPath) {
+        guard let cell = cell as? ToDoTableViewCell else {return}
+        cell.delegate = nil
+    }
 }
 
 //MARK: MainViewProtocol
@@ -294,12 +298,14 @@ extension MainViewController: CellDelegateProtocol {
         presenter?.updateReminder(for: indexPath.row, for: .notes, with: description)
     }
     
-    func dateBeginEditing(of cell: ToDoTableViewCell) {
-        guard let index = tableView.indexPath(for: cell)?.row else {return}
-    }
     
-    func timeBeginEditing(of cell: ToDoTableViewCell) {
-        guard let index = tableView.indexPath(for: cell)?.row else {return}
+    func dateNeedsUpdate(of cell: ToDoTableViewCell, for date: Date) {
+        guard let index = tableView.indexPath(for: cell)?.row,
+              let presenter else {return}
+        
+        let dateString = presenter.stringDate(for: date)
+        cell.setDate(dateString)
+        presenter.updateReminder(for: index, for: .date, with: date)
     }
     
     func checkboxStateChanged(of cell: ToDoTableViewCell, 
