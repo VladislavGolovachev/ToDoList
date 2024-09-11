@@ -24,9 +24,6 @@ protocol MainInteractorInputProtocol: AnyObject {
 
 //MARK: MainInteractor
 final class MainInteractor {
-    var serialQueue = DispatchQueue(label: "serialqueue-interactor-vladislavgolovachev",
-                                    qos: .utility)
-    
     weak var presenter: MainInteractorOutputProtocol?
     // needs to alloc from queue, so the context would be private
     lazy var dataManager: DataManagerProtocol = DataManager()

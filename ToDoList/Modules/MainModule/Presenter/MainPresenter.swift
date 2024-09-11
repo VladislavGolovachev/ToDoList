@@ -35,9 +35,8 @@ protocol MainViewPresenterProtocol: AnyObject {
 
 //MARK: MainPresenter
 final class MainPresenter {
-    let concurrentQueue = DispatchQueue(label: "concurrentqueue-presenter-vladislavgolovachev",
-                                        qos: .userInitiated,
-                                        attributes: .concurrent)
+    let queue = DispatchQueue(label: "serialqueue-presenter-vladislavgolovachev",
+                                        qos: .utility)
     
     weak var view: MainViewProtocol?
     let interactor: MainInteractorInputProtocol
