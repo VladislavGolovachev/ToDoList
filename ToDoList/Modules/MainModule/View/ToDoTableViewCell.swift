@@ -115,13 +115,13 @@ final class ToDoTableViewCell: UITableViewCell {
         reminderTextView.text = DefaultTextConstant.reusableText
         descriptionTextView.text = DefaultTextConstant.description
         dateTextField.text = DefaultTextConstant.reusableText
-        setReminderCheckedState(.unchecked)
+        setReminderCheckedState(.unchecked, tellDelegate: false)
     }
     
-    override func layoutSubviews() {
+    override func didMoveToWindow() {
         dateTextField.setInputViewDatePicker(withPickerMode: .dateAndTime,
                                              selector: #selector(dateChanged))
-        
+
         dateTextField.inputView?.overrideUserInterfaceStyle = .light
         dateTextField.inputAccessoryView?.overrideUserInterfaceStyle = .light
     }
@@ -139,10 +139,10 @@ extension ToDoTableViewCell {
     
     func setIsCompleted(_ isCompleted: Bool) {
         if isCompleted {
-            setReminderCheckedState(.checked)
+            setReminderCheckedState(.checked, tellDelegate: true)
             return
         }
-        setReminderCheckedState(.unchecked)
+        setReminderCheckedState(.unchecked, tellDelegate: true)
     }
     
     func setDate(_ date: NSAttributedString) {
@@ -161,13 +161,13 @@ extension ToDoTableViewCell {
     
     @objc private func checkboxChanged(_ sender: UIButton) {
         guard let state = CheckboxState(rawValue: 1 - sender.tag) else {return}
-        setReminderCheckedState(state)
+        setReminderCheckedState(state, tellDelegate: true)
     }
 }
 
 //MARK: Private Functions
 extension ToDoTableViewCell {
-    private func setReminderCheckedState(_ state: CheckboxState) {
+    private func setReminderCheckedState(_ state: CheckboxState, tellDelegate: Bool) {
         var name: String
         var flag = false
         if state == .checked {
@@ -182,7 +182,9 @@ extension ToDoTableViewCell {
         let image = UIImage(named: name)
         checkboxButton.setImage(image, for: .normal)
         
-        delegate?.checkboxStateChanged(of: self, forCheckedState: flag)
+        if tellDelegate {
+            delegate?.checkboxStateChanged(of: self, forCheckedState: flag)
+        }
     }
     
     private func addSubviews() {
