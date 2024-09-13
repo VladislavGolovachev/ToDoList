@@ -20,6 +20,7 @@ final class MainViewController: UIViewController {
         
         tableView.backgroundColor = MainViewConstants.Color.background
         tableView.separatorStyle = .none
+        tableView.contentInsetAdjustmentBehavior = .never
         
         tableView.showsVerticalScrollIndicator = false
         
@@ -76,11 +77,25 @@ final class MainViewController: UIViewController {
         setActions()
         addSubviews()
         setupConstraints()
+        
+        let nc = NotificationCenter.default
+        nc.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        nc.addObserver(self, selector: #selector(keyboardWillHide(_:)),  name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 }
 
 //MARK: Actions
 extension MainViewController {
+    @objc private func keyboardWillShow(_ notification: Notification) {
+        guard let info = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey],
+              let frame = info as? CGRect else {return}
+        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: frame.height, right: 0)
+    }
+    
+    @objc private func keyboardWillHide(_ notification: Notification) {
+        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+    }
+    
     @objc private func dismissKeyboard() {
         view.endEditing(true)
     }
@@ -212,7 +227,6 @@ extension MainViewController: UITableViewDataSource {
                                                  for: indexPath)
         as? ToDoTableViewCell ?? ToDoTableViewCell()
         
-        cell.delegate = self
         customizeCell(cell, at: indexPath)
         
         return cell
@@ -236,6 +250,10 @@ extension MainViewController: UITableViewDelegate {
                    forRowAt indexPath: IndexPath) {
         guard let cell = cell as? ToDoTableViewCell else {return}
         cell.delegate = nil
+    }
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        guard let cell = cell as? ToDoTableViewCell else {return}
+        cell.delegate = self
     }
 }
 
@@ -330,11 +348,18 @@ extension MainViewController: CellDelegateProtocol {
         presenter?.updateReminder(for: index, for: .isCompleted, with: checkboxState)
     }
     
-    func updateHeightOfRow(cell: UITableViewCell) {
+    func textViewChanged(for cell: UITableViewCell, textSize: CGSize, cursorOffset: Double) {
         UIView.setAnimationsEnabled(false)
         tableView.beginUpdates()
         tableView.endUpdates()
         UIView.setAnimationsEnabled(true)
+    
+        let touchPoint = CGPoint(x: cell.frame.origin.x,
+                                 y: cell.frame.origin.y + cursorOffset)
+        tableView.beginUpdates()
+        tableView.scrollRectToVisible(CGRect(origin: touchPoint, size: textSize),
+                                      animated: true)
+        tableView.endUpdates()
     }
 }
 

@@ -80,14 +80,15 @@ extension MainPresenter: MainViewPresenterProtocol {
             self.interactor.addNewReminder()
         }
     }
-//    initialLoading - nil
-//    fetchToDoList - segmentedControlRefresh(nil) or addReminder
-//    updateReminder - if .notSpecified then reload withoout scrolling
+    
     func updateReminder(for index: Int, for item: TodoKeys, with value: Any) {
         let state = reminderState()
         
         queue.async {
             self.prepareViewForUpdatingCell(forRow: index, key: item, value: value)
+            DispatchQueue.main.async {
+                self.view?.reloadSegmentedControl()
+            }
             
             let keyedValues = [item: value]
             
@@ -111,9 +112,13 @@ extension MainPresenter: MainViewPresenterProtocol {
             self.view?.currentReminders.remove(at: index)
             
             DispatchQueue.main.async {
-                self.view?.reloadSegmentedControl()
                 self.view?.animateCheckboxHit(at: IndexPath(row: index, section: 0))
             }
+            
+            self.interactor.updateReminder(for: index,
+                                           amongReminders: state,
+                                           with: keyedValues,
+                                           completion: nil)
         }
     }
     

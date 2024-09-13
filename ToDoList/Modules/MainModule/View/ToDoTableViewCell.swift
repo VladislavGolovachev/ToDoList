@@ -8,8 +8,8 @@
 import UIKit
 
 protocol CellDelegateProtocol: AnyObject {
-    func updateHeightOfRow(cell: UITableViewCell)
-    
+    func textViewChanged(for cell: UITableViewCell, textSize: CGSize, cursorOffset: Double)
+
     func reminderChanged(of cell: ToDoTableViewCell, for reminder: String)
     func descriptionChanged(of cell: ToDoTableViewCell, for description: String)
     func dateNeedsUpdate(of cell: ToDoTableViewCell, for date: Date)
@@ -246,6 +246,21 @@ extension ToDoTableViewCell {
             checkboxButton.widthAnchor.constraint(equalToConstant: CheckboxConstants.width)
         ])
     }
+    
+    private func getCaretSizeAndCursorOffset(of textView: UITextView) -> (CGSize, Double) {
+        guard let textPosition = textView.selectedTextRange?.start else {
+            return (CGSizeZero, 0.0)
+        }
+        let caret = textView.caretRect(for: textPosition)
+        var offset = caret.origin.y
+        offset += MainViewConstants.tableLineSpacing / 2.0 + CellConstants.contentPadding
+        
+        if textView.tag == TextViewTag.description {
+            offset += reminderTextView.bounds.height + CellConstants.VerticalSpacing.afterReminder
+        }
+        
+        return (caret.size, offset)
+    }
 }
 
 //MARK: UITextViewDelegate
@@ -258,8 +273,14 @@ extension ToDoTableViewCell: UITextViewDelegate {
         delegate?.descriptionChanged(of: self, for: textView.text)
     }
     
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        let (caretSize, cursorOffset) = getCaretSizeAndCursorOffset(of: textView)
+        delegate?.textViewChanged(for: self, textSize: caretSize, cursorOffset: cursorOffset)
+    }
+    
     func textViewDidChange(_ textView: UITextView) {
-        delegate?.updateHeightOfRow(cell: self)
+        let (caretSize, cursorOffset) = getCaretSizeAndCursorOffset(of: textView)
+        delegate?.textViewChanged(for: self, textSize: caretSize, cursorOffset: cursorOffset)
     }
 }
 
