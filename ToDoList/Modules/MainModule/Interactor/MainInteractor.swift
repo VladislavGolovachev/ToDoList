@@ -88,6 +88,7 @@ extension MainInteractor: MainInteractorInputProtocol {
     
     func loadInitialReminders(completion: @escaping () -> Void) {
         if !dataManager.isFirstLaunch {
+            completion()
             return
         }
         

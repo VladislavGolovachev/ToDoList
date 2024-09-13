@@ -53,7 +53,7 @@ final class TodoManager: TodoManagerProtocol {
 
             todos?[index].setValuesForKeys(newKeyedValues)
             
-//            try self?.saveContext()
+            try self?.saveContext()
         }
     }
     
@@ -70,7 +70,7 @@ final class TodoManager: TodoManagerProtocol {
             let object = NSManagedObject(entity: entity, insertInto: context)
             object.setValuesForKeys(keyedValues)
             
-//            try self?.saveContext()
+            try self?.saveContext()
         }
     }
     
@@ -83,7 +83,7 @@ final class TodoManager: TodoManagerProtocol {
             
             strongSelf.storage.backgroundContext.delete(todos[index])
                 
-//                try strongSelf.saveContext()
+                try strongSelf.saveContext()
         }
     }
     func count(ofObjectsWithKeyedValues keyedValues: [String: Any]?) throws -> Int {

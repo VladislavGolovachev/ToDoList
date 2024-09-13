@@ -24,7 +24,7 @@ final class DataManager: DataManagerProtocol {
     private let todoManager = TodoManager()
     
     var isFirstLaunch: Bool {
-        return true
+//        return true
         let key = UserDefaultsKeys.isNotFirstLaunch.rawValue
         let isNotFirstLaunch = UserDefaults.standard.bool(forKey: key)
         UserDefaults.standard.setValue(true, forKey: key)
@@ -59,8 +59,8 @@ final class DataManager: DataManagerProtocol {
     func getTodosCounts() throws -> [Int] {
         var counts = [0, 0, 0]
         
-        let dict1 = dictionary(ofReminderState: .completed)
-        let dict2 = dictionary(ofReminderState: .notCompleted)
+        let dict1 = dictionary(ofReminderState: .notCompleted)
+        let dict2 = dictionary(ofReminderState: .completed)
         
         counts[1] = try todoManager.count(ofObjectsWithKeyedValues: dict1)
         counts[2] = try todoManager.count(ofObjectsWithKeyedValues: dict2)
