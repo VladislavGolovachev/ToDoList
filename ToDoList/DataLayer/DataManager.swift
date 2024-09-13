@@ -24,7 +24,6 @@ final class DataManager: DataManagerProtocol {
     private let todoManager = TodoManager()
     
     var isFirstLaunch: Bool {
-//        return true
         let key = UserDefaultsKeys.isNotFirstLaunch.rawValue
         let isNotFirstLaunch = UserDefaults.standard.bool(forKey: key)
         UserDefaults.standard.setValue(true, forKey: key)

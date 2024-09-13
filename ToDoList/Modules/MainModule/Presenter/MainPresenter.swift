@@ -35,7 +35,9 @@ protocol MainViewPresenterProtocol: AnyObject {
 
 //MARK: MainPresenter
 final class MainPresenter {
-    let queue = DispatchQueue(label: "serialqueue-presenter-vladislavgolovachev", qos: .utility)
+    let queue = DispatchQueue(label: "serialqueue-presenter-vladislavgolovachev",
+                              qos: .utility,
+                              attributes: .concurrent)
     
     weak var view: MainViewProtocol?
     let interactor: MainInteractorInputProtocol
@@ -54,26 +56,22 @@ extension MainPresenter: MainViewPresenterProtocol {
         queue.async {
             self.interactor.loadInitialReminders() { [weak self] in
                 self?.interactor.fetchInitialCounts()
-                self?.interactor.fetchTodos(amongReminders: .notSpecified)
+                self?.interactor.fetchTodos(amongReminders: .notSpecified, completion: nil)
             }
         }
     }
     
     func fetchTodoList(completion: (() -> Void)?) {
         let state = reminderState()
-        let workItem = DispatchWorkItem {
-            self.interactor.fetchTodos(amongReminders: state)
-        }
-        queue.async(execute: workItem)
-        
-        workItem.notify(queue: queue) {
-            completion?()
+        queue.async {
+            self.interactor.fetchTodos(amongReminders: state, completion: completion)
         }
     }
     
     func addNewReminder() {
-        queue.async {
+        queue.async() {
             self.prepareViewForAddingCell()
+            
             DispatchQueue.main.async {
                 self.view?.reloadSegmentedControl()
                 self.view?.animateCellAdding()
@@ -82,9 +80,12 @@ extension MainPresenter: MainViewPresenterProtocol {
             self.interactor.addNewReminder()
         }
     }
-    
+//    initialLoading - nil
+//    fetchToDoList - segmentedControlRefresh(nil) or addReminder
+//    updateReminder - if .notSpecified then reload withoout scrolling
     func updateReminder(for index: Int, for item: TodoKeys, with value: Any) {
         let state = reminderState()
+        
         queue.async {
             self.prepareViewForUpdatingCell(forRow: index, key: item, value: value)
             
@@ -97,12 +98,12 @@ extension MainPresenter: MainViewPresenterProtocol {
                                                completion: nil)
                 return
             }
-
+            
             if state == .notSpecified {
                 self.interactor.updateReminder(for: index,
                                                amongReminders: state,
                                                with: keyedValues) { [weak self] in
-                    self?.interactor.fetchTodos(amongReminders: state)
+                    self?.interactor.fetchTodos(amongReminders: state, completion: nil)
                 }
                 return
             }
@@ -154,10 +155,15 @@ extension MainPresenter: MainViewPresenterProtocol {
 
 //MARK: MainInteractorOutputProtocol
 extension MainPresenter: MainInteractorOutputProtocol {
-    func reloadView(with todos: [Todo]) {
+    func reloadView(with todos: [Todo], completion: (() -> Void)?) {
         DispatchQueue.main.async {
+            print(todos.count, "fetched from the interactor")
             self.view?.currentReminders = todos
             self.view?.reload()
+            
+            self.queue.async {
+                completion?()
+            }
         }
     }
     

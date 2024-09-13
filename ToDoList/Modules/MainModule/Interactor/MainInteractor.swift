@@ -8,14 +8,14 @@
 import Foundation
 
 protocol MainInteractorOutputProtocol: AnyObject {
-    func reloadView(with: [Todo])
+    func reloadView(with: [Todo], completion: (() -> Void)?)
     func reloadTabs(with counts: [Int])
     func errorCaused(message: String)
 }
 
 protocol MainInteractorInputProtocol: AnyObject {
     func loadInitialReminders(completion: @escaping () -> Void)
-    func fetchTodos(amongReminders: ReminderState)
+    func fetchTodos(amongReminders: ReminderState, completion: (() -> Void)?)
     func fetchInitialCounts()
     
     func addNewReminder()
@@ -67,11 +67,11 @@ extension MainInteractor: MainInteractorInputProtocol {
         }
     }
     
-    func fetchTodos(amongReminders state: ReminderState) {
+    func fetchTodos(amongReminders state: ReminderState, completion: (() -> Void)?) {
         do {
             let todoEntities = try dataManager.fetchTodos(amongReminders: state)
             let todos = converted(todoEntities)
-            presenter?.reloadView(with: todos)
+            presenter?.reloadView(with: todos, completion: completion)
         } catch {
             handleStorageError(error)
         }

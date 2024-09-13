@@ -86,10 +86,12 @@ extension MainViewController {
     }
     
     @objc private func segmentedControlAction(_ control: CustomSegmentedControl) {
+        scrollToTop()
         presenter?.fetchTodoList(completion: nil)
     }
     
     @objc private func newTaskButtonAction(_ button: UIButton) {
+        scrollToTop()
         if segmentedControl.selectedSegmentIndex == 2 {
             segmentedControl.selectedSegmentIndex = 0
             
@@ -260,9 +262,10 @@ extension MainViewController: MainViewProtocol {
     }
     
     func reload() {
+        print("reload begins")
         tableView.reloadData()
-        scrollToTop()
         view.isUserInteractionEnabled = true
+        print("reload ended")
     }
     
     func reloadSegmentedControl() {
@@ -272,11 +275,13 @@ extension MainViewController: MainViewProtocol {
     }
     
     func animateCellAdding() {
-        scrollToTop()
-
+        print("animateCellAdding begins")
+        print(tableView.contentOffset)
         tableView.beginUpdates()
         tableView.insertRows(at: [indexPathZero], with: .top)
         tableView.endUpdates()
+        print(tableView.contentOffset)
+        print("animateCellAdding ends")
     }
     
     func animateCheckboxHit(at indexPath: IndexPath) {
