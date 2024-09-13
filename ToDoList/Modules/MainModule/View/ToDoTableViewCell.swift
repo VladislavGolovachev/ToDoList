@@ -35,6 +35,9 @@ final class ToDoTableViewCell: UITableViewCell {
     }()
     private let reminderTextView = {
         let textView = UITextView()
+        textView.keyboardAppearance = .light
+        textView.returnKeyType = .next
+        
         textView.backgroundColor = ColorConstants.cell
         textView.isScrollEnabled = false
         
@@ -46,10 +49,13 @@ final class ToDoTableViewCell: UITableViewCell {
         textView.textContainer.lineFragmentPadding = 0
         textView.tag = TextViewTag.reminder
         
+        
         return textView
     }()
     private let descriptionTextView = {
         let textView = UITextView()
+        textView.keyboardAppearance = .light
+        
         textView.backgroundColor = ColorConstants.cell
         textView.isScrollEnabled = false
         
@@ -71,6 +77,7 @@ final class ToDoTableViewCell: UITableViewCell {
     }()
     private lazy var dateTextField: UITextField = {
         let textField = UITextField()
+        textField.keyboardAppearance = .light
         
         let attributes: [NSAttributedString.Key: Any] = [
             .font: FontConstants.placeholder,
@@ -121,9 +128,6 @@ final class ToDoTableViewCell: UITableViewCell {
     override func didMoveToWindow() {
         dateTextField.setInputViewDatePicker(withPickerMode: .dateAndTime,
                                              selector: #selector(dateChanged))
-
-        dateTextField.inputView?.overrideUserInterfaceStyle = .light
-        dateTextField.inputAccessoryView?.overrideUserInterfaceStyle = .light
     }
 }
 
@@ -252,7 +256,7 @@ extension ToDoTableViewCell {
             return (CGSizeZero, 0.0)
         }
         let caret = textView.caretRect(for: textPosition)
-        var offset = caret.origin.y
+        var offset = caret.origin.y + 3
         offset += MainViewConstants.tableLineSpacing / 2.0 + CellConstants.contentPadding
         
         if textView.tag == TextViewTag.description {
@@ -265,6 +269,20 @@ extension ToDoTableViewCell {
 
 //MARK: UITextViewDelegate
 extension ToDoTableViewCell: UITextViewDelegate {
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        if textView.tag == TextViewTag.reminder && text.contains("\n") {
+            reminderTextView.resignFirstResponder()
+            descriptionTextView.becomeFirstResponder()
+            return false
+        }
+        return true
+    }
+    
+    func textViewDidChange(_ textView: UITextView) {
+        let (caretSize, cursorOffset) = getCaretSizeAndCursorOffset(of: textView)
+        delegate?.textViewChanged(for: self, textSize: caretSize, cursorOffset: cursorOffset)
+    }
+    
     func textViewDidEndEditing(_ textView: UITextView) {
         if textView.tag == TextViewTag.reminder {
             delegate?.reminderChanged(of: self, for: textView.text)
@@ -272,21 +290,6 @@ extension ToDoTableViewCell: UITextViewDelegate {
         }
         delegate?.descriptionChanged(of: self, for: textView.text)
     }
-    
-    func textViewDidBeginEditing(_ textView: UITextView) {
-        let (caretSize, cursorOffset) = getCaretSizeAndCursorOffset(of: textView)
-        delegate?.textViewChanged(for: self, textSize: caretSize, cursorOffset: cursorOffset)
-    }
-    
-    func textViewDidChange(_ textView: UITextView) {
-        let (caretSize, cursorOffset) = getCaretSizeAndCursorOffset(of: textView)
-        delegate?.textViewChanged(for: self, textSize: caretSize, cursorOffset: cursorOffset)
-    }
-}
-
-//MARK: UITextFieldDelegate
-extension ToDoTableViewCell: UITextFieldDelegate {
-    
 }
 
 //MARK: Local Constants

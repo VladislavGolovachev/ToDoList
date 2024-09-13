@@ -13,6 +13,7 @@ protocol MainViewProtocol: AnyObject {
     var selectedIndexOfSegmentedControl: Int {get}
     
     func reload()
+    func reloadRow(at: IndexPath, isAnimationNeeded: Bool)
     func reloadSegmentedControl()
     
     func animateCellAdding()
@@ -86,18 +87,18 @@ extension MainPresenter: MainViewPresenterProtocol {
         
         queue.async {
             self.prepareViewForUpdatingCell(forRow: index, key: item, value: value)
-            DispatchQueue.main.async {
-                self.view?.reloadSegmentedControl()
-            }
             
-            let keyedValues = [item: value]
-            
+            let keyedValues = [item: self.validValue(of: value, forKey: item)]
             if item != .isCompleted {
                 self.interactor.updateReminder(for: index,
                                                amongReminders: state,
                                                with: keyedValues,
                                                completion: nil)
                 return
+            }
+            
+            DispatchQueue.main.async {
+                self.view?.reloadSegmentedControl()
             }
             
             if state == .notSpecified {
@@ -247,11 +248,28 @@ extension MainPresenter {
         switch key {
         case .reminder:
             guard let string = value as? String else {return}
-            view?.currentReminders[index].reminder = string
+            let text = modifiedText(string)
+            view?.currentReminders[index].reminder = text
+            
+            if text.count == string.count {
+                return
+            }
+            DispatchQueue.main.async {
+                self.view?.reloadRow(at: IndexPath(row: index, section: 0), isAnimationNeeded: false)
+            }
             return
             
         case .notes:
-            view?.currentReminders[index].notes = value as? String
+            guard let string = value as? String else {return}
+            let text = modifiedText(string)
+            view?.currentReminders[index].notes = text
+            
+            if text.count == string.count {
+                return
+            }
+            DispatchQueue.main.async {
+                self.view?.reloadRow(at: IndexPath(row: index, section: 0), isAnimationNeeded: true)
+            }
             return
             
         case .date:
@@ -291,5 +309,34 @@ extension MainPresenter {
         view?.reminderCounts[0] -= 1
         
         view?.currentReminders.remove(at: index)
+    }
+    
+    private func modifiedText(_ rawText: String) -> String {
+        var modifiedText = rawText
+        
+        for char in rawText.reversed() {
+            switch char {
+            case " ", "\n":
+                modifiedText.removeLast()
+                
+            default:
+                return modifiedText
+            }
+        }
+        
+        return modifiedText
+    }
+    
+    private func validValue(of value: Any, forKey key: TodoKeys) -> Any {
+        switch key {
+        case .reminder, .notes:
+            guard let rawText = value as? String else {
+                return ""
+            }
+            return modifiedText(rawText)
+            
+        default:
+            return value
+        }
     }
 }

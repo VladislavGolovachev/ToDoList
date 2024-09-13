@@ -11,7 +11,7 @@ final class MainViewController: UIViewController {
     //MARK: Properties
     var presenter: MainViewPresenterProtocol?
     var currentTodos = [Todo]()
-    var todoCounts = [0, 0, 0]
+    var todoCounts = Array(repeating: 0, count: 3)
     
     lazy var tableView: UITableView = {
         let tableView = UITableView(frame: CGRectZero, style: .plain)
@@ -69,18 +69,16 @@ final class MainViewController: UIViewController {
     //MARK: ViewController LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.isUserInteractionEnabled = false
-        presenter?.initialLoading()
         
         view.backgroundColor = MainViewConstants.Color.background
+        view.isUserInteractionEnabled = false
+        
+        presenter?.initialLoading()
         
         setActions()
+        setNotifications()
         addSubviews()
         setupConstraints()
-        
-        let nc = NotificationCenter.default
-        nc.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
-        nc.addObserver(self, selector: #selector(keyboardWillHide(_:)),  name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 }
 
@@ -90,10 +88,11 @@ extension MainViewController {
         guard let info = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey],
               let frame = info as? CGRect else {return}
         tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: frame.height, right: 0)
+        inputView?.overrideUserInterfaceStyle = .light
     }
     
     @objc private func keyboardWillHide(_ notification: Notification) {
-        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        tableView.contentInset = .zero
     }
     
     @objc private func dismissKeyboard() {
@@ -139,14 +138,34 @@ extension MainViewController {
     }
     
     private func setActions() {
-        let tap = UITapGestureRecognizer(target: self,
+        let tapGesture = UITapGestureRecognizer(target: self,
                                          action: #selector(dismissKeyboard))
-        tap.cancelsTouchesInView = false
-        view.addGestureRecognizer(tap)
+        tapGesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGesture)
         
-        segmentedControl.addTarget(self, action: #selector(segmentedControlAction(_:)), for: .valueChanged)
-        newTaskButton.addTarget(self, action: #selector(newTaskButtonAction(_:)), for: .touchUpInside)
-        newTaskButton.addTarget(self, action: #selector(newTaskButtonAnimation(_:)), for: .touchDown)
+        segmentedControl.addTarget(self, 
+                                   action: #selector(segmentedControlAction(_:)),
+                                   for: .valueChanged)
+        
+        newTaskButton.addTarget(self,
+                                action: #selector(newTaskButtonAction(_:)),
+                                for: .touchUpInside)
+        newTaskButton.addTarget(self, 
+                                action: #selector(newTaskButtonAnimation(_:)),
+                                for: .touchDown)
+    }
+    
+    private func setNotifications() {
+        let nc = NotificationCenter.default
+        
+        nc.addObserver(self,
+                       selector: #selector(keyboardWillShow(_:)),
+                       name: UIResponder.keyboardWillShowNotification,
+                       object: nil)
+        nc.addObserver(self, 
+                       selector: #selector(keyboardWillHide(_:)),
+                       name: UIResponder.keyboardWillHideNotification,
+                       object: nil)
     }
     
     private func addSubviews() {
@@ -164,6 +183,7 @@ extension MainViewController {
         
         let safeArea = view.safeAreaLayoutGuide
         let padding = MainViewConstants.padding
+        
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: safeArea.topAnchor, 
                                             constant: ViewConstants.upperPadding),
@@ -184,7 +204,7 @@ extension MainViewController {
             segmentedControl.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, 
                                                   constant: ViewConstants.Spacing.common),
             segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
-            segmentedControl.heightAnchor.constraint(equalToConstant: 20),
+            segmentedControl.heightAnchor.constraint(equalToConstant: ViewConstants.segmentedControlHeight),
             
             tableView.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, 
                                            constant: ViewConstants.Spacing.common),
@@ -205,10 +225,11 @@ extension MainViewController {
         let todo = currentTodos[indexPath.row]
         
         cell.setReminder(todo.reminder)
+        cell.setIsCompleted(todo.isCompleted)
         if let notes = todo.notes {
             cell.setDescription(notes)
         }
-        cell.setIsCompleted(todo.isCompleted)
+        
         guard let date = todo.date,
               let dateString = presenter?.attributedString(from: date) else {return}
         cell.setDate(dateString)
@@ -221,7 +242,8 @@ extension MainViewController: UITableViewDataSource {
         return currentTodos.count
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, 
+                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let identifier = ToDoTableViewCell.reuseIdentifier
         let cell = tableView.dequeueReusableCell(withIdentifier: identifier,
                                                  for: indexPath)
@@ -245,15 +267,19 @@ extension MainViewController: UITableViewDataSource {
 
 //MARK: UITableViewDelegate
 extension MainViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, 
-                   didEndDisplaying cell: UITableViewCell,
+    
+    func tableView(_ tableView: UITableView,
+                   didEndDisplaying cell: UITableViewCell, 
                    forRowAt indexPath: IndexPath) {
-        guard let cell = cell as? ToDoTableViewCell else {return}
-        cell.delegate = nil
+        let cell = cell as? ToDoTableViewCell
+        cell?.delegate = nil
     }
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        guard let cell = cell as? ToDoTableViewCell else {return}
-        cell.delegate = self
+    
+    func tableView(_ tableView: UITableView, 
+                   willDisplay cell: UITableViewCell,
+                   forRowAt indexPath: IndexPath) {
+        let cell = cell as? ToDoTableViewCell
+        cell?.delegate = self
     }
 }
 
@@ -280,10 +306,15 @@ extension MainViewController: MainViewProtocol {
     }
     
     func reload() {
-        print("reload begins")
         tableView.reloadData()
         view.isUserInteractionEnabled = true
-        print("reload ended")
+    }
+    
+    func reloadRow(at indexPath: IndexPath, isAnimationNeeded: Bool) {
+        let animation: UITableView.RowAnimation
+        animation = (isAnimationNeeded ? .fade : .none)
+        
+        tableView.reloadRows(at: [indexPath], with: animation)
     }
     
     func reloadSegmentedControl() {
@@ -293,13 +324,9 @@ extension MainViewController: MainViewProtocol {
     }
     
     func animateCellAdding() {
-        print("animateCellAdding begins")
-        print(tableView.contentOffset)
         tableView.beginUpdates()
         tableView.insertRows(at: [indexPathZero], with: .top)
         tableView.endUpdates()
-        print(tableView.contentOffset)
-        print("animateCellAdding ends")
     }
     
     func animateCheckboxHit(at indexPath: IndexPath) {
@@ -356,8 +383,10 @@ extension MainViewController: CellDelegateProtocol {
     
         let touchPoint = CGPoint(x: cell.frame.origin.x,
                                  y: cell.frame.origin.y + cursorOffset)
+        
         tableView.beginUpdates()
-        tableView.scrollRectToVisible(CGRect(origin: touchPoint, size: textSize),
+        tableView.scrollRectToVisible(CGRect(origin: touchPoint, 
+                                             size: textSize),
                                       animated: true)
         tableView.endUpdates()
     }
@@ -366,10 +395,11 @@ extension MainViewController: CellDelegateProtocol {
 //MARK: Local Constants
 extension MainViewController {
     private enum ViewConstants {
-        static let upperPadding = 10.0
+        static let segmentedControlHeight: Double = 20
+        static let upperPadding: Double = 10
         enum Spacing {
-            static let common = 20.0
-            static let afterTitle = 2.0
+            static let common: Double = 20
+            static let afterTitle: Double = 2
         }
     }
     
@@ -390,10 +420,10 @@ extension MainViewController {
     }
     
     private enum ButtonConstants {
-        static let cornerRadius = 12.0
+        static let cornerRadius: Double = 12
         static let imageName = "Plus"
-        static let imagePadding = 5.0
-        static let width = 130.0
-        static let height = 40.0
+        static let imagePadding: Double = 5
+        static let width: Double = 130
+        static let height: Double = 40
     }
 }
