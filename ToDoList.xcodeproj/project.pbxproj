@@ -142,8 +142,8 @@
 			children = (
 				820E5C822C875DF9005FD12B /* AppDelegate.swift */,
 				820E5C842C875DF9005FD12B /* SceneDelegate.swift */,
-				829B92132C8E709700DD316C /* Assembly.swift */,
 				829B92152C8E709A00DD316C /* Router.swift */,
+				829B92132C8E709700DD316C /* Assembly.swift */,
 				829B92172C8E70B500DD316C /* Modules */,
 				820187A02C8C478800D2610E /* DataLayer */,
 				821B412A2C8B87260094213E /* NetworkLayer */,

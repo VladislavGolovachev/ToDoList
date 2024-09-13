@@ -76,15 +76,19 @@ extension CustomSegmentedControl {
             label.translatesAutoresizingMaskIntoConstraints = false
             
             let constant = labelLeadingConstant(forSegment: index)
-            label.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: constant).isActive = true
+            NSLayoutConstraint.activate([
+                label.centerYAnchor.constraint(equalTo: centerYAnchor),
+                label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: constant)
+            ])
         }
     }
     
     private func constructLabel(forSegment index: Int) -> UILabel {
         let padding = SegmentConstants.Label.contentPadding
-        let label = PaddingLabel(top: 0, left: padding,
-                                 bottom: 0, right: padding)
+        let label = PaddingLabel(top: 0, 
+                                 left: padding,
+                                 bottom: 0,
+                                 right: padding)
 
         label.layer.cornerRadius = SegmentConstants.Label.cornerRadius
         label.layer.masksToBounds = true

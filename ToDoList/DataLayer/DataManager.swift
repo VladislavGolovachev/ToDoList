@@ -13,7 +13,8 @@ protocol DataManagerProtocol {
     func fetchTodos(amongReminders: ReminderState) throws -> [TodoEntity]
     func saveTodo(with keyedValues: [TodoKeys: Any]) throws
     func deleteTodo(for index: Int, amongReminders: ReminderState) throws
-    func updateTodo(for index: Int, amongReminders: ReminderState,
+    func updateTodo(for index: Int, 
+                    amongReminders: ReminderState,
                     with keyedValues: [TodoKeys: Any]) throws
     
     func getTodosCounts() throws -> [Int]
@@ -56,7 +57,7 @@ final class DataManager: DataManagerProtocol {
     }
     
     func getTodosCounts() throws -> [Int] {
-        var counts = [0, 0, 0]
+        var counts = Array(repeating: 0, count: 3)
         
         let dict1 = dictionary(ofReminderState: .notCompleted)
         let dict2 = dictionary(ofReminderState: .completed)

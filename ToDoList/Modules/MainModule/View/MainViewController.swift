@@ -59,7 +59,8 @@ final class MainViewController: UIViewController {
             .font: FontConstants.buttonTitle,
             .foregroundColor: ColorConstants.interactiveTheme
         ]
-        config.attributedTitle = AttributedString("New Task", attributes: AttributeContainer(attributes))
+        config.attributedTitle = AttributedString("New Task", 
+                                                  attributes: AttributeContainer(attributes))
         config.imagePadding = ButtonConstants.imagePadding
         button.configuration = config
         
@@ -87,8 +88,8 @@ extension MainViewController {
     @objc private func keyboardWillShow(_ notification: Notification) {
         guard let info = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey],
               let frame = info as? CGRect else {return}
+
         tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: frame.height, right: 0)
-        inputView?.overrideUserInterfaceStyle = .light
     }
     
     @objc private func keyboardWillHide(_ notification: Notification) {
@@ -146,7 +147,6 @@ extension MainViewController {
         segmentedControl.addTarget(self, 
                                    action: #selector(segmentedControlAction(_:)),
                                    for: .valueChanged)
-        
         newTaskButton.addTarget(self,
                                 action: #selector(newTaskButtonAction(_:)),
                                 for: .touchUpInside)
@@ -385,8 +385,7 @@ extension MainViewController: CellDelegateProtocol {
                                  y: cell.frame.origin.y + cursorOffset)
         
         tableView.beginUpdates()
-        tableView.scrollRectToVisible(CGRect(origin: touchPoint, 
-                                             size: textSize),
+        tableView.scrollRectToVisible(CGRect(origin: touchPoint, size: textSize),
                                       animated: true)
         tableView.endUpdates()
     }
@@ -414,9 +413,9 @@ extension MainViewController {
     }
     
     private enum FontConstants {
-        static let title = UIFont.systemFont(ofSize: 28.0, weight: .bold)
-        static let date = UIFont.systemFont(ofSize: 14.0, weight: .medium)
-        static let buttonTitle = UIFont.systemFont(ofSize: 14.0, weight: .semibold)
+        static let title        = UIFont.systemFont(ofSize: 28, weight: .bold)
+        static let date         = UIFont.systemFont(ofSize: 14, weight: .medium)
+        static let buttonTitle  = UIFont.systemFont(ofSize: 14, weight: .semibold)
     }
     
     private enum ButtonConstants {

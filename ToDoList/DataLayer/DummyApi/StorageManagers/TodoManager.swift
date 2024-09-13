@@ -30,7 +30,6 @@ final class TodoManager: TodoManagerProtocol {
             }
             
             let request = strongSelf.request(isSortNeeded: true, predicateKeyedValues: keyedValues)
-            
             do {
                 todos = try strongSelf.storage.backgroundContext.fetch(request)
             } catch {
@@ -50,7 +49,6 @@ final class TodoManager: TodoManagerProtocol {
         
         try storage.backgroundContext.performAndWait { [weak self] in
             let todos = try self?.fetch(amongObjectsWithKeyedValues: searchingKeyedValues)
-
             todos?[index].setValuesForKeys(newKeyedValues)
             
             try self?.saveContext()
@@ -62,7 +60,6 @@ final class TodoManager: TodoManagerProtocol {
             if let error = self?.storage.loadingError {
                 throw error
             }
-            
             guard let context = self?.storage.backgroundContext,
                   let entity = NSEntityDescription.entity(forEntityName: "TodoEntity",
                                                           in: context) else {return}
@@ -82,8 +79,7 @@ final class TodoManager: TodoManagerProtocol {
             let todos = try strongSelf.fetch(amongObjectsWithKeyedValues: keyedValues)
             
             strongSelf.storage.backgroundContext.delete(todos[index])
-                
-                try strongSelf.saveContext()
+            try strongSelf.saveContext()
         }
     }
     func count(ofObjectsWithKeyedValues keyedValues: [String: Any]?) throws -> Int {

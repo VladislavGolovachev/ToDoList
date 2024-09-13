@@ -19,14 +19,17 @@ protocol MainInteractorInputProtocol: AnyObject {
     func fetchInitialCounts()
     
     func addNewReminder()
-    func updateReminder(for index: Int, amongReminders: ReminderState, with: [TodoKeys: Any], completion: (() -> Void)?)
     func deleteReminder(for index: Int, amongReminders: ReminderState)
+    func updateReminder(for index: Int,
+                        amongReminders: ReminderState,
+                        with: [TodoKeys: Any],
+                        completion: (() -> Void)?)
 }
 
 //MARK: MainInteractor
 final class MainInteractor {
     weak var presenter: MainInteractorOutputProtocol?
-    // needs to alloc from queue, so the context would be private
+    
     lazy var dataManager: DataManagerProtocol = DataManager()
     let networkManager = NetworkManager()
 }
@@ -107,6 +110,7 @@ extension MainInteractor: MainInteractorInputProtocol {
                         strongSelf.presenter?.errorCaused(message: error.rawValue)
                     }
                 }
+                
             case .failure(let error):
                 strongSelf.presenter?.errorCaused(message: error.rawValue)
             }
@@ -127,7 +131,7 @@ extension MainInteractor {
         let date = Date.now
         
         for (i, todo) in todos.enumerated() {
-            let milliSecond = Double(i) / 1000
+            let milliSecond = Double(i) / 1000.0
             let keyedValues: [TodoKeys: Any] = [
                 .reminder:      todo.reminder,
                 .isCompleted:   todo.isCompleted,
@@ -147,7 +151,6 @@ extension MainInteractor {
                             notes: todoEntity.notes,
                             isCompleted: todoEntity.isCompleted,
                             date: todoEntity.date)
-            
             todos.append(todo)
         }
         

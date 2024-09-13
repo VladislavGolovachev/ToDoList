@@ -20,7 +20,8 @@ protocol CoreDataStorageManager {
     
     func fetch(amongObjectsWithKeyedValues: [String: Any]?) throws -> [ObjectType]
     func persist(with keyedValues: [String: Any]) throws
-    func update(for: KeyType, amongObjectsWithKeyedValues: [String: Any]?,
-                with keyedValues: [String: Any]) throws
     func delete(for: KeyType, amongObjectsWithKeyedValues: [String: Any]?) throws
+    func update(for: KeyType,
+                amongObjectsWithKeyedValues: [String: Any]?,
+                with keyedValues: [String: Any]) throws
 }

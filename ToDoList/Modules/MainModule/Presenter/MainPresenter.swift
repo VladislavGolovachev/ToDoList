@@ -163,7 +163,6 @@ extension MainPresenter: MainViewPresenterProtocol {
 extension MainPresenter: MainInteractorOutputProtocol {
     func reloadView(with todos: [Todo], completion: (() -> Void)?) {
         DispatchQueue.main.async {
-            print(todos.count, "fetched from the interactor")
             self.view?.currentReminders = todos
             self.view?.reload()
             

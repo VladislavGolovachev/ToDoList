@@ -8,7 +8,9 @@
 import UIKit
 
 protocol CellDelegateProtocol: AnyObject {
-    func textViewChanged(for cell: UITableViewCell, textSize: CGSize, cursorOffset: Double)
+    func textViewChanged(for cell: UITableViewCell, 
+                         textSize: CGSize,
+                         cursorOffset: Double)
 
     func reminderChanged(of cell: ToDoTableViewCell, for reminder: String)
     func descriptionChanged(of cell: ToDoTableViewCell, for description: String)
@@ -108,7 +110,9 @@ final class ToDoTableViewCell: UITableViewCell {
         reminderTextView.delegate = self
         descriptionTextView.delegate = self
         
-        checkboxButton.addTarget(self, action: #selector(checkboxChanged(_:)), for: .touchUpInside)
+        checkboxButton.addTarget(self, 
+                                 action: #selector(checkboxChanged(_:)),
+                                 for: .touchUpInside)
         addSubviews()
         setupConstraints()
     }
@@ -119,9 +123,11 @@ final class ToDoTableViewCell: UITableViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        reminderTextView.text = DefaultTextConstant.reusableText
-        descriptionTextView.text = DefaultTextConstant.description
-        dateTextField.text = DefaultTextConstant.reusableText
+        
+        reminderTextView.text       = DefaultTextConstant.reusableText
+        descriptionTextView.text    = DefaultTextConstant.description
+        dateTextField.text          = DefaultTextConstant.reusableText
+        
         setReminderCheckedState(.unchecked, tellDelegate: false)
     }
     
@@ -174,10 +180,11 @@ extension ToDoTableViewCell {
     private func setReminderCheckedState(_ state: CheckboxState, tellDelegate: Bool) {
         var name: String
         var flag = false
+        
         if state == .checked {
+            flag = true
             name = CheckboxConstants.ImageName.checked
             checkboxButton.tag = CheckboxState.checked.rawValue
-            flag = true
         } else {
             name = CheckboxConstants.ImageName.unchecked
             checkboxButton.tag = CheckboxState.unchecked.rawValue
@@ -253,7 +260,7 @@ extension ToDoTableViewCell {
     
     private func getCaretSizeAndCursorOffset(of textView: UITextView) -> (CGSize, Double) {
         guard let textPosition = textView.selectedTextRange?.start else {
-            return (CGSizeZero, 0.0)
+            return (.zero, 0)
         }
         let caret = textView.caretRect(for: textPosition)
         var offset = caret.origin.y + 3
@@ -275,6 +282,7 @@ extension ToDoTableViewCell: UITextViewDelegate {
             descriptionTextView.becomeFirstResponder()
             return false
         }
+        
         return true
     }
     
