@@ -10,6 +10,7 @@ import UIKit
 enum MainViewConstants {
     static let padding = 20.0
     static let tableLineSpacing = 20.0
+    static let initialReminderText = "New reminder"
     enum Color {
         static let background = UIColor(red: 0.95, green: 0.95, blue: 0.95, alpha: 1)
         static let date = UIColor.lightGray
@@ -21,8 +22,8 @@ enum MainViewConstants {
     }
 }
 
-enum ReminderState {
-    case completed
-    case notCompleted
+enum ReminderState: Int {
     case notSpecified
+    case notCompleted
+    case completed
 }

@@ -38,7 +38,7 @@ final class ToDoTableViewCell: UITableViewCell {
         textView.backgroundColor = ColorConstants.cell
         textView.isScrollEnabled = false
         
-        textView.text = DefaultTextConstant.initialReminder
+        textView.text = MainViewConstants.initialReminderText
         textView.font = FontConstants.primary
         textView.textColor = ColorConstants.Text.primary
         
@@ -133,7 +133,7 @@ extension ToDoTableViewCell {
         reminderTextView.text = reminder
     }
     
-    func setDescription(_ description: String) {
+    func setDescription(_ description: String?) {
         descriptionTextView.text = description
     }
     
@@ -321,7 +321,6 @@ extension ToDoTableViewCell {
     }
     
     private enum DefaultTextConstant {
-        static let initialReminder = "New reminder"
         static let reusableText = ""
         static let description = "Add note"
         static let datePlaceholder = "Set date"

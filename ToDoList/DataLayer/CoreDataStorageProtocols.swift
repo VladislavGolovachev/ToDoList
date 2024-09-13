@@ -18,7 +18,7 @@ protocol CoreDataStorageManager {
     associatedtype ObjectType: NSManagedObject
     associatedtype KeyType
     
-    func fetch(for: KeyType, amongObjectsWithKeyedValues: [String: Any]?) throws -> ObjectType
+    func fetch(amongObjectsWithKeyedValues: [String: Any]?) throws -> [ObjectType]
     func persist(with keyedValues: [String: Any]) throws
     func update(for: KeyType, amongObjectsWithKeyedValues: [String: Any]?,
                 with keyedValues: [String: Any]) throws

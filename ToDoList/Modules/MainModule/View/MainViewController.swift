@@ -10,6 +10,9 @@ import UIKit
 final class MainViewController: UIViewController {
     //MARK: Properties
     var presenter: MainViewPresenterProtocol?
+    var currentTodos = [Todo]()
+    var todoCounts = [0, 0, 0]
+    
     lazy var tableView: UITableView = {
         let tableView = UITableView(frame: CGRectZero, style: .plain)
         tableView.register(ToDoTableViewCell.self,
@@ -65,7 +68,7 @@ final class MainViewController: UIViewController {
     //MARK: ViewController LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        presenter?.loadInitialReminders()
+        presenter?.initialLoading()
         
         view.backgroundColor = MainViewConstants.Color.background
         
@@ -82,26 +85,20 @@ extension MainViewController {
     }
     
     @objc private func segmentedControlAction(_ control: CustomSegmentedControl) {
-        reloadTableAccordingToSegmentedControl()
+        presenter?.fetchTodoList(completion: nil)
     }
     
     @objc private func newTaskButtonAction(_ button: UIButton) {
         if segmentedControl.selectedSegmentIndex == 2 {
             segmentedControl.selectedSegmentIndex = 0
-            reloadTableAccordingToSegmentedControl()
+            
+            presenter?.fetchTodoList { [weak self] in
+                self?.presenter?.addNewReminder()
+            }
+            return
         }
-        if tableViewCount(for: segmentedControl.selectedSegmentIndex) != 0 {
-            print(segmentedControl.selectedSegmentIndex, tableViewCount(for: segmentedControl.selectedSegmentIndex))
-            tableView.scrollToRow(at: indexPathZero, at: .top, animated: true)
-        }
+        
         presenter?.addNewReminder()
-        
-        
-        reloadSegmentedControl()
-        
-        tableView.beginUpdates()
-        tableView.insertRows(at: [indexPathZero], with: .top)
-        tableView.endUpdates()
     }
     
     @objc private func newTaskButtonAnimation(_ button: UIButton) {
@@ -179,60 +176,31 @@ extension MainViewController {
         ])
     }
     
-    private func customizeCell(_ cell: ToDoTableViewCell, at row: Int) {
-        if let reminder = presenter?.reminder(for: row) {
-            cell.setReminder(reminder)
-        }
-        if let description = presenter?.description(for: row) {
-            cell.setDescription(description)
-        }
-        if let isCompleted = presenter?.isCompleted(for: row) {
-            cell.setIsCompleted(isCompleted)
-        }
-        if let date = presenter?.date(for: row) {
-            cell.setDate(date)
-        }
-    }
-    
-    private func reloadTableAccordingToSegmentedControl() {
-        tableView.reloadData()
-        
-        let count = tableViewCount(for: segmentedControl.selectedSegmentIndex)
-        if count == 0 {
+    private func scrollToTop() {
+        if tableView.numberOfRows(inSection: 0) == 0 {
             return
         }
         tableView.scrollToRow(at: indexPathZero, at: .top, animated: false)
     }
     
-    private func reloadSegmentedControl() {
-        for i in 0...2 {
-            segmentedControl.setRemindersAmount(String(tableViewCount(for: i)),
-                                                forSegment: i)
-        }
-    }
-    
-    private func tableViewCount(for segment: Int) -> Int {
-        var count: Int?
-        switch segment {
-        case 0:
-            count = presenter?.remindersCount()
-        case 1:
-            count = presenter?.notCompletedRemindersCount()
-        case 2:
-            count = presenter?.completedRemindersCount()
-        default:
-            break
-        }
+    private func customizeCell(_ cell: ToDoTableViewCell, at indexPath: IndexPath) {
+        let todo = currentTodos[indexPath.row]
         
-        return count ?? 0
+        cell.setReminder(todo.reminder)
+        if let notes = todo.notes {
+            cell.setDescription(notes)
+        }
+        cell.setIsCompleted(todo.isCompleted)
+        guard let date = todo.date,
+              let dateString = presenter?.attributedString(from: date) else {return}
+        cell.setDate(dateString)
     }
 }
 
 //MARK: UITableViewDataSource
 extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let count = tableViewCount(for: segmentedControl.selectedSegmentIndex)
-        return count
+        return currentTodos.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -242,7 +210,7 @@ extension MainViewController: UITableViewDataSource {
         as? ToDoTableViewCell ?? ToDoTableViewCell()
         
         cell.delegate = self
-        customizeCell(cell, at: indexPath.row)
+        customizeCell(cell, at: indexPath)
         
         return cell
     }
@@ -255,12 +223,6 @@ extension MainViewController: UITableViewDataSource {
                    commit editingStyle: UITableViewCell.EditingStyle,
                    forRowAt indexPath: IndexPath) {
         presenter?.deleteReminder(for: indexPath.row)
-        
-        tableView.beginUpdates()
-        tableView.deleteRows(at: [indexPath], with: .automatic)
-        tableView.endUpdates()
-        
-        reloadSegmentedControl()
     }
 }
 
@@ -279,50 +241,86 @@ extension MainViewController: MainViewProtocol {
     var selectedIndexOfSegmentedControl: Int {
         return segmentedControl.selectedSegmentIndex
     }
+    var currentReminders: [Todo] {
+        get {
+            currentTodos
+        }
+        set {
+            currentTodos = newValue
+        }
+    }
+    var reminderCounts: [Int] {
+        get {
+            todoCounts
+        }
+        set {
+            todoCounts = newValue
+        }
+    }
     
     func reload() {
-        reloadSegmentedControl()
         tableView.reloadData()
+        scrollToTop()
     }
-}
+    
+    func reloadSegmentedControl() {
+        for i in 0...2 {
+            segmentedControl.setRemindersAmount(String(todoCounts[i]), forSegment: i)
+        }
+    }
+    
+    func animateCellAdding() {
+        scrollToTop()
 
-//MARK: CellDelegateProtocol
-extension MainViewController: CellDelegateProtocol {
-    func reminderChanged(of cell: ToDoTableViewCell, for reminder: String) {
-        guard let indexPath = tableView.indexPath(for: cell) else {return}
-        presenter?.updateReminder(for: indexPath.row, for: .reminder, with: reminder)
+        tableView.beginUpdates()
+        tableView.insertRows(at: [indexPathZero], with: .top)
+        tableView.endUpdates()
     }
     
-    func descriptionChanged(of cell: ToDoTableViewCell, for description: String) {
-        guard let indexPath = tableView.indexPath(for: cell) else {return}
-        presenter?.updateReminder(for: indexPath.row, for: .notes, with: description)
-    }
-    
-    
-    func dateNeedsUpdate(of cell: ToDoTableViewCell, for date: Date) {
-        guard let index = tableView.indexPath(for: cell)?.row,
-              let presenter else {return}
-        
-        let dateString = presenter.stringDate(for: date)
-        cell.setDate(dateString)
-        presenter.updateReminder(for: index, for: .date, with: date)
-    }
-    
-    func checkboxStateChanged(of cell: ToDoTableViewCell, 
-                              forCheckedState checkboxState: Bool) {
-        guard let indexPath = tableView.indexPath(for: cell) else {return}
-        presenter?.updateReminder(for: indexPath.row, for: .isCompleted, with: checkboxState)
-        
+    func animateCheckboxHit(at indexPath: IndexPath) {
         switch segmentedControl.selectedSegmentIndex {
         case 1:
             tableView.deleteRows(at: [indexPath], with: .right)
         case 2:
             tableView.deleteRows(at: [indexPath], with: .left)
         default:
-            tableView.reloadData()
+            return
         }
+    }
+    
+    func animateCellDeleting(at indexPath: IndexPath) {
+        tableView.beginUpdates()
+        tableView.deleteRows(at: [indexPath], with: .automatic)
+        tableView.endUpdates()
+    }
+}
+
+//MARK: CellDelegateProtocol
+extension MainViewController: CellDelegateProtocol {
+    func reminderChanged(of cell: ToDoTableViewCell, for reminder: String) {
+        guard let index = tableView.indexPath(for: cell)?.row else {return}
+        presenter?.updateReminder(for: index, for: .reminder, with: reminder)
+    }
+    
+    func descriptionChanged(of cell: ToDoTableViewCell, for description: String) {
+        guard let index = tableView.indexPath(for: cell)?.row else {return}
+        presenter?.updateReminder(for: index, for: .notes, with: description)
+    }
+    
+    func dateNeedsUpdate(of cell: ToDoTableViewCell, for date: Date) {
+        guard let index = tableView.indexPath(for: cell)?.row,
+              let presenter else {return}
         
-        reloadSegmentedControl()
+        let dateString = presenter.attributedString(from: date)
+        cell.setDate(dateString)
+        
+        presenter.updateReminder(for: index, for: .date, with: date)
+    }
+    
+    func checkboxStateChanged(of cell: ToDoTableViewCell, 
+                              forCheckedState checkboxState: Bool) {
+        guard let index = tableView.indexPath(for: cell)?.row else {return}
+        presenter?.updateReminder(for: index, for: .isCompleted, with: checkboxState)
     }
     
     func updateHeightOfRow(cell: UITableViewCell) {

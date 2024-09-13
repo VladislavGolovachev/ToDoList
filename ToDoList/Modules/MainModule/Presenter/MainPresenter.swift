@@ -8,29 +8,29 @@
 import Foundation
 
 protocol MainViewProtocol: AnyObject {
+    var reminderCounts: [Int] {get set}
+    var currentReminders: [Todo] {get set}
     var selectedIndexOfSegmentedControl: Int {get}
+    
     func reload()
+    func reloadSegmentedControl()
+    
+    func animateCellAdding()
+    func animateCheckboxHit(at: IndexPath)
+    func animateCellDeleting(at: IndexPath)
 }
 
 protocol MainViewPresenterProtocol: AnyObject {
     init(view: MainViewProtocol, interactor: MainInteractorInputProtocol, router: RouterProtocol)
-    func loadInitialReminders()
+    func initialLoading()
+    func fetchTodoList(completion: (() -> Void)?)
     
     func addNewReminder()
     func updateReminder(for index: Int, for item: TodoKeys, with value: Any)
     func deleteReminder(for index: Int)
     
     func currentDate() -> String
-    func reminder(for index: Int) -> String?
-    func description(for index: Int) -> String?
-    func isCompleted(for index: Int) -> Bool
-    func date(for index: Int) -> NSAttributedString?
-    
-    func remindersCount() -> Int
-    func completedRemindersCount() -> Int
-    func notCompletedRemindersCount() -> Int
-    
-    func stringDate(for: Date) -> NSAttributedString
+    func attributedString(from date: Date) -> NSAttributedString
 }
 
 //MARK: MainPresenter
@@ -47,6 +47,120 @@ final class MainPresenter {
         self.interactor = interactor
         self.router = router
     }
+}
+
+//MARK: MainViewPresenterProtocol
+extension MainPresenter: MainViewPresenterProtocol {
+    func initialLoading() {
+        interactor.loadInitialReminders() { [weak self] in
+            self?.interactor.fetchInitialCounts()
+            self?.interactor.fetchTodos(amongReminders: .notSpecified)
+        }
+    }
+    
+    func fetchTodoList(completion: (() -> Void)?) {
+        let workItem = DispatchWorkItem {
+            let state = self.reminderState()
+            self.interactor.fetchTodos(amongReminders: state)
+        }
+        DispatchQueue.main.async(execute: workItem)
+        
+        workItem.notify(queue: .main) {
+            completion?()
+        }
+    }
+    
+    func addNewReminder() {
+        prepareViewForAddingCell()
+        
+        view?.reloadSegmentedControl()
+        view?.animateCellAdding()
+        
+        interactor.addNewReminder()
+    }
+    
+    func updateReminder(for index: Int, for item: TodoKeys, with value: Any) {
+        prepareViewForUpdatingCell(forRow: index, key: item, value: value)
+        
+        let state = reminderState()
+        let keyedValues = [item: value]
+
+        if item != .isCompleted {
+            interactor.updateReminder(for: index,
+                                      amongReminders: state,
+                                      with: keyedValues,
+                                      completion: nil)
+            return
+        }
+        
+        if state == .notSpecified {
+            interactor.updateReminder(for: index,
+                                      amongReminders: state,
+                                      with: keyedValues) { [weak self] in
+                self?.interactor.fetchTodos(amongReminders: state)
+            }
+            
+            return
+        }
+        
+        view?.reloadSegmentedControl()
+        view?.animateCheckboxHit(at: IndexPath(row: index, section: 0))
+    }
+    
+    func deleteReminder(for index: Int) {
+        prepareViewForDeletingCell(forRow: index)
+        
+        let indexPath = IndexPath(row: index, section: 0)
+        view?.reloadSegmentedControl()
+        view?.animateCellDeleting(at: indexPath)
+        
+        let state = reminderState()
+        interactor.deleteReminder(for: index, amongReminders: state)
+    }
+    
+    func currentDate() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEEE, d MMMM"
+        
+        let dateString = dateFormatter.string(from: Date.now)
+        
+        return dateString
+    }
+    
+    func attributedString(from date: Date) -> NSAttributedString {
+        let dateString = dateAttributedString(from: date)
+        let timeString = timeAttributedString(from: date)
+        
+        let mutableString = NSMutableAttributedString()
+        mutableString.append(dateString)
+        mutableString.append(timeString)
+        
+        return mutableString
+    }
+}
+
+//MARK: MainInteractorOutputProtocol
+extension MainPresenter: MainInteractorOutputProtocol {
+    func reloadView(with todos: [Todo]) {
+        DispatchQueue.main.async {
+            self.view?.currentReminders = todos
+            self.view?.reload()
+        }
+    }
+    
+    func reloadTabs(with counts: [Int]) {
+        DispatchQueue.main.async {
+            self.view?.reminderCounts = counts
+            self.view?.reloadSegmentedControl()
+        }
+    }
+    
+    func errorCaused(message: String) {
+        DispatchQueue.main.async {
+            self.router.showAlert(message: message)
+        }
+    }
+    
 }
 
 //MARK: Private Functions
@@ -104,110 +218,55 @@ extension MainPresenter {
         
         return attributedString
     }
-}
-
-//MARK: MainViewPresenterProtocol
-extension MainPresenter: MainViewPresenterProtocol {
-    func loadInitialReminders() {
-        interactor.loadInitialReminders()
-    }
     
-    func addNewReminder() {
-        interactor.addNewReminder()
-    }
-    
-    func updateReminder(for index: Int, for item: TodoKeys, with value: Any) {
-        let state = reminderState()
-        let keyedValues = [item: value]
-        
-        interactor.updateReminder(for: index, amongReminders: state, with: keyedValues)
-    }
-    
-    func deleteReminder(for index: Int) {
-        let state = reminderState()
-        interactor.deleteReminder(for: index, amongReminders: state)
-    }
-    
-    func currentDate() -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "EEEE, d MMMM"
-        
-        let dateString = dateFormatter.string(from: Date.now)
-        
-        return dateString
-    }
-    
-    func reminder(for index: Int) -> String? {
-        let state = reminderState()
-        let reminder = interactor.todoProperty(for: index,
-                                               amongReminders: state,
-                                               property: .reminder) as? String
-        return reminder
-    }
-    
-    func description(for index: Int) -> String? {
-        let state = reminderState()
-        let notes = interactor.todoProperty(for: index,
-                                            amongReminders: state,
-                                            property: .notes) as? String
-        return notes
-    }
-    
-    func isCompleted(for index: Int) -> Bool {
-        let state = reminderState()
-        let isCompleted = interactor.todoProperty(for: index,
-                                                  amongReminders: state,
-                                                  property: .isCompleted) as? Bool
-        return isCompleted ?? false
-    }
-    
-    func date(for index: Int) -> NSAttributedString? {
-        let state = reminderState()
-        guard let date = interactor.todoProperty(for: index,
-                                                 amongReminders: state,
-                                                 property: .date) as? Date else {return nil}
-        
-        return stringDate(for: date)
-    }
-    
-    func remindersCount() -> Int {
-        let count = interactor.remindersCount(ofReminders: .notSpecified)
-        return count
-    }
-    
-    func completedRemindersCount() -> Int {
-        let count = interactor.remindersCount(ofReminders: .completed)
-        return count
-    }
-    
-    func notCompletedRemindersCount() -> Int {
-        let count = interactor.remindersCount(ofReminders: .notCompleted)
-        return count
-    }
-    
-    func stringDate(for date: Date) -> NSAttributedString {
-        let dateString = dateAttributedString(from: date)
-        let timeString = timeAttributedString(from: date)
-        
-        let mutableString = NSMutableAttributedString()
-        mutableString.append(dateString)
-        mutableString.append(timeString)
-        
-        return mutableString
-    }
-}
-
-//MARK: MainInteractorOutputProtocol
-extension MainPresenter: MainInteractorOutputProtocol {
-    func errorCaused(message: String) {
-        DispatchQueue.main.async {
-            self.router.showAlert(message: message)
+    private func prepareViewForUpdatingCell(forRow index: Int, key: TodoKeys, value: Any) {
+        switch key {
+        case .reminder:
+            guard let string = value as? String else {return}
+            view?.currentReminders[index].reminder = string
+            return
+            
+        case .notes:
+            view?.currentReminders[index].notes = value as? String
+            return
+            
+        case .date:
+            view?.currentReminders[index].date = value as? Date
+            return
+            
+        default: break
         }
+        
+        guard let isCompleted = value as? Bool else {return}
+        if isCompleted {
+            view?.reminderCounts[1] -= 1
+            view?.reminderCounts[2] += 1
+        } else {
+            view?.reminderCounts[1] += 1
+            view?.reminderCounts[2] -= 1
+        }
+        view?.currentReminders.remove(at: index)
     }
     
-    func reloadView() {
-        DispatchQueue.main.async {
-            self.view?.reload()
+    private func prepareViewForAddingCell() {
+        view?.reminderCounts[0] += 1
+        view?.reminderCounts[1] += 1
+        
+        let todo = Todo(reminder: MainViewConstants.initialReminderText,
+                        isCompleted: false)
+        view?.currentReminders.insert(todo, at: 0)
+    }
+    
+    private func prepareViewForDeletingCell(forRow index: Int) {
+        guard let object = view?.currentReminders[index] else {return}
+        
+        if object.isCompleted {
+            view?.reminderCounts[2] -= 1
+        } else {
+            view?.reminderCounts[1] -= 1
         }
+        view?.reminderCounts[0] -= 1
+        
+        view?.currentReminders.remove(at: index)
     }
 }

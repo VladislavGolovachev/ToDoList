@@ -25,6 +25,7 @@
 		821B41222C8B0F850094213E /* PaddingLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 821B41212C8B0F850094213E /* PaddingLabel.swift */; };
 		821B41262C8B15AF0094213E /* CustomSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 821B41252C8B15AF0094213E /* CustomSegmentedControl.swift */; };
 		821B41292C8B1E4E0094213E /* UIImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 821B41282C8B1E4E0094213E /* UIImageExtension.swift */; };
+		8228799C2C9331300019F4BF /* Todo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8228799B2C9331300019F4BF /* Todo.swift */; };
 		826949542C8A108F0093719A /* ButtonWithExpandedHitbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826949532C8A108F0093719A /* ButtonWithExpandedHitbox.swift */; };
 		827241172C9065D300AECCE0 /* DummyApiDataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 827241152C9065D300AECCE0 /* DummyApiDataModel.xcdatamodeld */; };
 		827241192C90B6ED00AECCE0 /* UITextFieldExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 827241182C90B6ED00AECCE0 /* UITextFieldExtension.swift */; };
@@ -62,6 +63,7 @@
 		821B41212C8B0F850094213E /* PaddingLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingLabel.swift; sourceTree = "<group>"; };
 		821B41252C8B15AF0094213E /* CustomSegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSegmentedControl.swift; sourceTree = "<group>"; };
 		821B41282C8B1E4E0094213E /* UIImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtension.swift; sourceTree = "<group>"; };
+		8228799B2C9331300019F4BF /* Todo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Todo.swift; sourceTree = "<group>"; };
 		826949532C8A108F0093719A /* ButtonWithExpandedHitbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonWithExpandedHitbox.swift; sourceTree = "<group>"; };
 		827241162C9065D300AECCE0 /* DummyApiDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DummyApiDataModel.xcdatamodel; sourceTree = "<group>"; };
 		827241182C90B6ED00AECCE0 /* UITextFieldExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITextFieldExtension.swift; sourceTree = "<group>"; };
@@ -194,6 +196,7 @@
 		820E5C9C2C8760E8005FD12B /* Entity */ = {
 			isa = PBXGroup;
 			children = (
+				8228799B2C9331300019F4BF /* Todo.swift */,
 				82833A102C8E15B500D60384 /* TodoEntity+CoreDataClass.swift */,
 				82833A112C8E15B500D60384 /* TodoEntity+CoreDataProperties.swift */,
 			);
@@ -221,8 +224,8 @@
 		821B412A2C8B87260094213E /* NetworkLayer */ = {
 			isa = PBXGroup;
 			children = (
-				82B1B5A12C8BE0B5008AB69C /* DummyAPI */,
 				82B1B5942C8BAEFE008AB69C /* NetworkManager.swift */,
+				82B1B5A12C8BE0B5008AB69C /* DummyAPI */,
 				82B1B5962C8BAFC5008AB69C /* NetworkRouter.swift */,
 				82B1B5982C8BB055008AB69C /* EndPointType.swift */,
 			);
@@ -381,6 +384,7 @@
 				820E5CA42C87AAB0005FD12B /* ToDoTableViewCell.swift in Sources */,
 				820187CE2C8D265900D2610E /* TodoManager.swift in Sources */,
 				82B1B59B2C8BB462008AB69C /* DummyApiEndPoint.swift in Sources */,
+				8228799C2C9331300019F4BF /* Todo.swift in Sources */,
 				82B1B5972C8BAFC5008AB69C /* NetworkRouter.swift in Sources */,
 				820E5C852C875DF9005FD12B /* SceneDelegate.swift in Sources */,
 				820187CF2C8D265900D2610E /* DummyApiStorage.swift in Sources */,

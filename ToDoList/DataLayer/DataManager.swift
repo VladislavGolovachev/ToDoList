@@ -10,13 +10,14 @@ import Foundation
 protocol DataManagerProtocol {
     var isFirstLaunch: Bool {get}
     
-    func createTodo(with keyedValues: [TodoKeys: Any]) throws
-    func fetchTodo(for index: Int, amongReminders: ReminderState) throws -> TodoEntity
+    func fetchTodos(amongReminders: ReminderState) throws -> [TodoEntity]
+    func saveTodo(with keyedValues: [TodoKeys: Any]) throws
+    func deleteTodo(for index: Int, amongReminders: ReminderState) throws
     func updateTodo(for index: Int, amongReminders: ReminderState,
                     with keyedValues: [TodoKeys: Any]) throws
-    func deleteTodo(for index: Int, amongReminders: ReminderState) throws
-    func getTodosCount(ofReminders: ReminderState) throws -> Int
-    func saveTodos(_: [DummyTodo], date: Date) throws
+    
+    func getTodosCounts() throws -> [Int]
+    func saveTodos(by keyedValuesArray: [[TodoKeys: Any]]) throws
 }
 
 final class DataManager: DataManagerProtocol {
@@ -31,55 +32,54 @@ final class DataManager: DataManagerProtocol {
         return !isNotFirstLaunch
     }
     
-    func createTodo(with keyedValues: [TodoKeys: Any]) throws {
-        try todoManager.persist(with: converted(keyedValues))
+    func fetchTodos(amongReminders state: ReminderState) throws -> [TodoEntity] {
+        let dict = dictionary(ofReminderState: state)
+        let todos = try todoManager.fetch(amongObjectsWithKeyedValues: dict)
+        
+        return todos
     }
     
-    func fetchTodo(for index: Int, amongReminders state: ReminderState) throws -> TodoEntity {
-        let dict = dictionaryFor(state)
-        let todo = try todoManager.fetch(for: index, amongObjectsWithKeyedValues: dict)
-        
-        return todo
+    func saveTodo(with keyedValues: [TodoKeys: Any]) throws {
+        try todoManager.persist(with: converted(keyedValues))
     }
     
     func updateTodo(for index: Int, amongReminders state: ReminderState, 
                     with keyedValues: [TodoKeys: Any]) throws {
-        let dict = dictionaryFor(state)
+        let dict = dictionary(ofReminderState: state)
         try todoManager.update(for: index,
                                amongObjectsWithKeyedValues: dict,
                                with: converted(keyedValues))
     }
     
     func deleteTodo(for index: Int, amongReminders state: ReminderState) throws {
-        let dict = dictionaryFor(state)
+        let dict = dictionary(ofReminderState: state)
         try todoManager.delete(for: index, amongObjectsWithKeyedValues: dict)
     }
     
-    func getTodosCount(ofReminders state: ReminderState) throws -> Int {
-        let dict = dictionaryFor(state)
-        let count = try todoManager.count(ofObjectsWithKeyedValues: dict)
+    func getTodosCounts() throws -> [Int] {
+        var counts = [0, 0, 0]
         
-        return count
+        let dict1 = dictionary(ofReminderState: .completed)
+        let dict2 = dictionary(ofReminderState: .notCompleted)
+        
+        counts[1] = try todoManager.count(ofObjectsWithKeyedValues: dict1)
+        counts[2] = try todoManager.count(ofObjectsWithKeyedValues: dict2)
+        counts[0] = counts[1] + counts[2]
+        
+        return counts
     }
     
-    func saveTodos(_ todos: [DummyTodo], date: Date) throws {
-        
-        for (i, todo) in todos.enumerated() {
-            let milliSecond = Double(i) / 1000
-            let keyedValues: [TodoKeys: Any] = [
-                .reminder:      todo.reminder,
-                .isCompleted:   todo.isCompleted,
-                .creationDate:  date + milliSecond
-            ]
-            try todoManager.persist(with: converted(keyedValues))
+    func saveTodos(by keyedValuesArray: [[TodoKeys: Any]]) throws {
+        for keyedValues in keyedValuesArray {
+            try saveTodo(with: keyedValues)
         }
     }
 }
 
 //MARK: Private Things
 extension DataManager {
-    private func dictionaryFor(_ reminderState: ReminderState) -> [String: Bool]? {
-        var key = TodoKeys.isCompleted.rawValue
+    private func dictionary(ofReminderState reminderState: ReminderState) -> [String: Bool]? {
+        let key = TodoKeys.isCompleted.rawValue
         
         switch reminderState {
         case .completed:

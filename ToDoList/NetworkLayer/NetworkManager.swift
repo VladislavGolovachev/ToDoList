@@ -32,6 +32,9 @@ struct NetworkManager: NetworkManagerProtocol {
             
             do {
                 let apiResponse = try JSONDecoder().decode(TodosResponse.self, from: data)
+                for (i, todo) in apiResponse.todos.enumerated() {
+                    print("Net", i, todo.reminder)
+                }
                 completion(.success(apiResponse.todos))
             } catch {
                 completion(.failure(.unableToDecode))

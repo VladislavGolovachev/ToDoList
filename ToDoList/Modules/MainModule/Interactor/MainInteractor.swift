@@ -8,17 +8,18 @@
 import Foundation
 
 protocol MainInteractorOutputProtocol: AnyObject {
+    func reloadView(with: [Todo])
+    func reloadTabs(with counts: [Int])
     func errorCaused(message: String)
-    func reloadView()
 }
 
 protocol MainInteractorInputProtocol: AnyObject {
-    func loadInitialReminders()
+    func loadInitialReminders(completion: @escaping () -> Void)
+    func fetchTodos(amongReminders: ReminderState)
+    func fetchInitialCounts()
     
-    func todoProperty(for index: Int, amongReminders: ReminderState, property: TodoKeys) -> Any?
-    func remindersCount(ofReminders: ReminderState) -> Int
     func addNewReminder()
-    func updateReminder(for index: Int, amongReminders: ReminderState, with: [TodoKeys: Any])
+    func updateReminder(for index: Int, amongReminders: ReminderState, with: [TodoKeys: Any], completion: (() -> Void)?)
     func deleteReminder(for index: Int, amongReminders: ReminderState)
 }
 
@@ -34,13 +35,13 @@ final class MainInteractor {
 extension MainInteractor: MainInteractorInputProtocol {
     func addNewReminder() {
         let dict: [TodoKeys: Any] = [
-            .reminder: "New reminder",
+            .reminder: MainViewConstants.initialReminderText,
             .isCompleted: false,
             .creationDate: Date.now
         ]
         
         do {
-            try dataManager.createTodo(with: dict)
+            try dataManager.saveTodo(with: dict)
         } catch {
             handleStorageError(error)
         }
@@ -48,16 +49,17 @@ extension MainInteractor: MainInteractorInputProtocol {
     
     func updateReminder(for index: Int, 
                         amongReminders state: ReminderState,
-                        with keyedValues: [TodoKeys: Any]) {
+                        with keyedValues: [TodoKeys: Any],
+                        completion: (() -> Void)?) {
         do {
             try dataManager.updateTodo(for: index, amongReminders: state, with: keyedValues)
+            completion?()
         } catch {
             handleStorageError(error)
         }
     }
     
     func deleteReminder(for index: Int, amongReminders state: ReminderState) {
-        print("Deleting")
         do {
             try dataManager.deleteTodo(for: index, amongReminders: state)
         } catch {
@@ -65,59 +67,47 @@ extension MainInteractor: MainInteractorInputProtocol {
         }
     }
     
-    func remindersCount(ofReminders state: ReminderState) -> Int {
-        var count = 0
+    func fetchTodos(amongReminders state: ReminderState) {
         do {
-            count = try dataManager.getTodosCount(ofReminders: state)
+            let todoEntities = try dataManager.fetchTodos(amongReminders: state)
+            let todos = converted(todoEntities)
+            presenter?.reloadView(with: todos)
         } catch {
             handleStorageError(error)
-            return 0
-        }
-        
-        return count
-    }
-    
-    func todoProperty(for index: Int, amongReminders state: ReminderState, property: TodoKeys) -> Any? {
-        var todo: TodoEntity
-        do {
-            todo = try dataManager.fetchTodo(for: index, amongReminders: state)
-        } catch {
-            handleStorageError(error)
-            return nil
-        }
-        
-        switch property {
-        case .reminder:
-            return todo.reminder
-        case .notes:
-            return todo.notes
-        case .isCompleted:
-            return todo.isCompleted
-        case .date:
-            return todo.date
-        default:
-            return nil
         }
     }
     
-    func loadInitialReminders() {
+    func fetchInitialCounts() {
+        do {
+            let counts = try dataManager.getTodosCounts()
+            presenter?.reloadTabs(with: counts)
+        } catch {
+            handleStorageError(error)
+        }
+    }
+    
+    func loadInitialReminders(completion: @escaping () -> Void) {
         if !dataManager.isFirstLaunch {
             return
         }
         
         networkManager.getTodos { [weak self] result in
+            guard let strongSelf = self else {return}
+            
             switch result {
             case .success(let todos):
                 do {
-                    try self?.dataManager.saveTodos(todos, date: Date.now)
+                    let keyedValuesArray = strongSelf.converted(todos)
+                    try strongSelf.dataManager.saveTodos(by: keyedValuesArray)
+                    
+                    completion()
                 } catch let catchedError {
                     if let error = catchedError as? StorageError {
-                        self?.presenter?.errorCaused(message: error.rawValue)
+                        strongSelf.presenter?.errorCaused(message: error.rawValue)
                     }
                 }
-                self?.presenter?.reloadView()
             case .failure(let error):
-                self?.presenter?.errorCaused(message: error.rawValue)
+                strongSelf.presenter?.errorCaused(message: error.rawValue)
             }
         }
     }
@@ -129,5 +119,37 @@ extension MainInteractor {
         if let storageError = error as? StorageError {
             presenter?.errorCaused(message: storageError.rawValue)
         }
+    }
+    
+    private func converted(_ todos: [DummyTodo]) -> [[TodoKeys: Any]] {
+        var keyedValuesArray = [[TodoKeys: Any]]()
+        let date = Date.now
+        
+        for (i, todo) in todos.enumerated() {
+            let milliSecond = Double(i) / 1000
+            let keyedValues: [TodoKeys: Any] = [
+                .reminder:      todo.reminder,
+                .isCompleted:   todo.isCompleted,
+                .creationDate:  date + milliSecond
+            ]
+            
+            keyedValuesArray.append(keyedValues)
+        }
+        
+        return keyedValuesArray
+    }
+    
+    private func converted(_ todoEntities: [TodoEntity]) -> [Todo] {
+        var todos = [Todo]()
+        for todoEntity in todoEntities {
+            let todo = Todo(reminder: todoEntity.reminder,
+                            notes: todoEntity.notes,
+                            isCompleted: todoEntity.isCompleted,
+                            date: todoEntity.date)
+            
+            todos.append(todo)
+        }
+        
+        return todos
     }
 }
