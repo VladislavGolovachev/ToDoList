@@ -52,70 +52,84 @@ final class MainPresenter {
 //MARK: MainViewPresenterProtocol
 extension MainPresenter: MainViewPresenterProtocol {
     func initialLoading() {
-        interactor.loadInitialReminders() { [weak self] in
-            self?.interactor.fetchInitialCounts()
-            self?.interactor.fetchTodos(amongReminders: .notSpecified)
+        queue.async {
+            self.interactor.loadInitialReminders() { [weak self] in
+                self?.interactor.fetchInitialCounts()
+                self?.interactor.fetchTodos(amongReminders: .notSpecified)
+            }
         }
     }
     
     func fetchTodoList(completion: (() -> Void)?) {
+        let state = reminderState()
         let workItem = DispatchWorkItem {
-            let state = self.reminderState()
             self.interactor.fetchTodos(amongReminders: state)
         }
-        DispatchQueue.main.async(execute: workItem)
+        queue.async(execute: workItem)
         
-        workItem.notify(queue: .main) {
+        workItem.notify(queue: queue) {
             completion?()
         }
     }
     
     func addNewReminder() {
-        prepareViewForAddingCell()
-        
-        view?.reloadSegmentedControl()
-        view?.animateCellAdding()
-        
-        interactor.addNewReminder()
+        queue.async {
+            self.prepareViewForAddingCell()
+            DispatchQueue.main.async {
+                self.view?.reloadSegmentedControl()
+                self.view?.animateCellAdding()
+            }
+            
+            self.interactor.addNewReminder()
+        }
     }
     
     func updateReminder(for index: Int, for item: TodoKeys, with value: Any) {
-        prepareViewForUpdatingCell(forRow: index, key: item, value: value)
-        
         let state = reminderState()
-        let keyedValues = [item: value]
+        queue.async {
+            self.prepareViewForUpdatingCell(forRow: index, key: item, value: value)
+            
+            let keyedValues = [item: value]
+            
+            if item != .isCompleted {
+                self.interactor.updateReminder(for: index,
+                                               amongReminders: state,
+                                               with: keyedValues,
+                                               completion: nil)
+                return
+            }
 
-        if item != .isCompleted {
-            interactor.updateReminder(for: index,
-                                      amongReminders: state,
-                                      with: keyedValues,
-                                      completion: nil)
-            return
-        }
-        
-        if state == .notSpecified {
-            interactor.updateReminder(for: index,
-                                      amongReminders: state,
-                                      with: keyedValues) { [weak self] in
-                self?.interactor.fetchTodos(amongReminders: state)
+            if state == .notSpecified {
+                self.interactor.updateReminder(for: index,
+                                               amongReminders: state,
+                                               with: keyedValues) { [weak self] in
+                    self?.interactor.fetchTodos(amongReminders: state)
+                }
+                return
             }
             
-            return
+            self.view?.currentReminders.remove(at: index)
+            
+            DispatchQueue.main.async {
+                self.view?.reloadSegmentedControl()
+                self.view?.animateCheckboxHit(at: IndexPath(row: index, section: 0))
+            }
         }
-        
-        view?.reloadSegmentedControl()
-        view?.animateCheckboxHit(at: IndexPath(row: index, section: 0))
     }
     
     func deleteReminder(for index: Int) {
-        prepareViewForDeletingCell(forRow: index)
-        
-        let indexPath = IndexPath(row: index, section: 0)
-        view?.reloadSegmentedControl()
-        view?.animateCellDeleting(at: indexPath)
-        
         let state = reminderState()
-        interactor.deleteReminder(for: index, amongReminders: state)
+        queue.async {
+            self.prepareViewForDeletingCell(forRow: index)
+            
+            let indexPath = IndexPath(row: index, section: 0)
+            DispatchQueue.main.async {
+                self.view?.reloadSegmentedControl()
+                self.view?.animateCellDeleting(at: indexPath)
+            }
+            
+            self.interactor.deleteReminder(for: index, amongReminders: state)
+        }
     }
     
     func currentDate() -> String {
@@ -245,7 +259,6 @@ extension MainPresenter {
             view?.reminderCounts[1] += 1
             view?.reminderCounts[2] -= 1
         }
-        view?.currentReminders.remove(at: index)
     }
     
     private func prepareViewForAddingCell() {

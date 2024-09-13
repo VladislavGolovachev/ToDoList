@@ -68,6 +68,7 @@ final class MainViewController: UIViewController {
     //MARK: ViewController LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.isUserInteractionEnabled = false
         presenter?.initialLoading()
         
         view.backgroundColor = MainViewConstants.Color.background
@@ -261,6 +262,7 @@ extension MainViewController: MainViewProtocol {
     func reload() {
         tableView.reloadData()
         scrollToTop()
+        view.isUserInteractionEnabled = true
     }
     
     func reloadSegmentedControl() {
@@ -290,7 +292,7 @@ extension MainViewController: MainViewProtocol {
     
     func animateCellDeleting(at indexPath: IndexPath) {
         tableView.beginUpdates()
-        tableView.deleteRows(at: [indexPath], with: .automatic)
+        tableView.deleteRows(at: [indexPath], with: .left)
         tableView.endUpdates()
     }
 }
