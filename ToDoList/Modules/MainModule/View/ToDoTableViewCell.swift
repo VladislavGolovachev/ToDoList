@@ -327,43 +327,43 @@ extension ToDoTableViewCell: UITextViewDelegate {
 //MARK: Local Constants
 extension ToDoTableViewCell {
     private enum CellConstants {
-        static let contentPadding = 20.0
-        static let cornerRadius = 10.0
-        static let separatorHeight = 1.0
+        static let contentPadding: Double = 20
+        static let cornerRadius: Double = 10
+        static let separatorHeight: Double = 1
         
         enum VerticalSpacing {
-            static let afterReminder = 5.0
-            static let common = 15.0
+            static let afterReminder: Double = 5
+            static let common: Double = 15
         }
         enum HorizontalSpacing {
-            static let checkbox = 5.0
+            static let checkbox: Double = 5
         }
     }
     
     private enum ColorConstants {
-        static let cell = UIColor.white
-        static let separator = UIColor.separator.withAlphaComponent(0.1)
+        static let cell         = UIColor.white
+        static let separator    = UIColor.separator.withAlphaComponent(0.1)
         
         enum Text {
-            static let primary = UIColor.black
-            static let secondary = UIColor.lightGray
-            static let placeholder = UIColor(red: 0.8, green: 0.8, blue: 0.8, alpha: 1)
+            static let primary      = UIColor.black
+            static let secondary    = UIColor.lightGray
+            static let placeholder  = UIColor(red: 0.8, green: 0.8, blue: 0.8, alpha: 1)
         }
     }
     
     private enum FontConstants {
-        static let primary = UIFont.systemFont(ofSize: 17.0, weight: .medium)
-        static let secondary = UIFont.systemFont(ofSize: 12.0, weight: .semibold)
-        static let placeholder = UIFont.systemFont(ofSize: 12.0, weight: .medium)
+        static let primary      = UIFont.systemFont(ofSize: 17.0, weight: .medium)
+        static let secondary    = UIFont.systemFont(ofSize: 12.0, weight: .semibold)
+        static let placeholder  = UIFont.systemFont(ofSize: 12.0, weight: .medium)
     }
     
     private enum CheckboxConstants {
         enum ImageName {
-            static let checked = "CheckedCheckbox"
-            static let unchecked = "UncheckedCheckbox"
+            static let checked      = "CheckedCheckbox"
+            static let unchecked    = "UncheckedCheckbox"
         }
-        static let width = 26.0
-        static let centerYOffset = 40.0
+        static let width: Double = 26
+        static let centerYOffset: Double = 40
     }
     
     private enum CheckboxState: Int {
@@ -377,8 +377,8 @@ extension ToDoTableViewCell {
     }
     
     private enum DefaultTextConstant {
-        static let reusableText = ""
-        static let description = "Add note"
-        static let datePlaceholder = "Set date"
+        static let reusableText     = ""
+        static let description      = "Add note"
+        static let datePlaceholder  = "Set date"
     }
 }

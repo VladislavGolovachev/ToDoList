@@ -71,6 +71,8 @@ final class MainViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        UIView.appearance().isExclusiveTouch = true
+        
         view.backgroundColor = MainViewConstants.Color.background
         view.isUserInteractionEnabled = false
         
@@ -89,7 +91,10 @@ extension MainViewController {
         guard let info = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey],
               let frame = info as? CGRect else {return}
 
-        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: frame.height, right: 0)
+        tableView.contentInset = UIEdgeInsets(top: 0, 
+                                              left: 0,
+                                              bottom: frame.height,
+                                              right: 0)
     }
     
     @objc private func keyboardWillHide(_ notification: Notification) {

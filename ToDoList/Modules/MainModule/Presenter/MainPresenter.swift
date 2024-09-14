@@ -87,6 +87,9 @@ extension MainPresenter: MainViewPresenterProtocol {
         
         queue.async {
             self.prepareViewForUpdatingCell(forRow: index, key: item, value: value)
+            DispatchQueue.main.async {
+                self.view?.reloadSegmentedControl()
+            }
             
             let keyedValues = [item: self.validValue(of: value, forKey: item)]
             if item != .isCompleted {
@@ -95,11 +98,7 @@ extension MainPresenter: MainViewPresenterProtocol {
                                                with: keyedValues,
                                                completion: nil)
                 return
-            }
-            
-            DispatchQueue.main.async {
-                self.view?.reloadSegmentedControl()
-            }
+            }            
             
             if state == .notSpecified {
                 self.interactor.updateReminder(for: index,
