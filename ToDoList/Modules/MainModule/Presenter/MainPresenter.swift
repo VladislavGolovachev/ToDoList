@@ -110,9 +110,9 @@ extension MainPresenter: MainViewPresenterProtocol {
                 return
             }
             
-            self.view?.currentReminders.remove(at: index)
             
             DispatchQueue.main.async {
+                self.view?.currentReminders.remove(at: index)
                 self.view?.animateCheckboxHit(at: IndexPath(row: index, section: 0))
             }
             
