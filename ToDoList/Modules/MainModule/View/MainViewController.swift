@@ -101,8 +101,9 @@ extension MainViewController {
     }
     
     @objc private func segmentedControlAction(_ control: CustomSegmentedControl) {
-        scrollToTop()
-        presenter?.fetchTodoList(completion: nil)
+        presenter?.fetchTodoList() {
+            self.scrollToTop()
+        }
     }
     
     @objc private func newTaskButtonAction(_ button: UIButton) {

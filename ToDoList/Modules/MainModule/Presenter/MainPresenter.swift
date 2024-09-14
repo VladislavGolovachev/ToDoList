@@ -165,10 +165,7 @@ extension MainPresenter: MainInteractorOutputProtocol {
         DispatchQueue.main.async {
             self.view?.currentReminders = todos
             self.view?.reload()
-            
-            self.queue.async {
-                completion?()
-            }
+            completion?()
         }
     }
     
