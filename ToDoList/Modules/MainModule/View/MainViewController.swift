@@ -227,12 +227,10 @@ extension MainViewController {
         
         cell.setReminder(todo.reminder)
         cell.setIsCompleted(todo.isCompleted)
-        if let notes = todo.notes {
-            cell.setDescription(notes)
-        }
+        cell.setDescription(todo.notes)
         
-        guard let date = todo.date,
-              let dateString = presenter?.attributedString(from: date) else {return}
+        guard let date = todo.date else {return}
+        let dateString = presenter?.attributedString(from: date)
         cell.setDate(dateString)
     }
 }
@@ -376,19 +374,27 @@ extension MainViewController: CellDelegateProtocol {
         presenter?.updateReminder(for: index, for: .isCompleted, with: checkboxState)
     }
     
-    func textViewChanged(for cell: UITableViewCell, textSize: CGSize, cursorOffset: Double) {
+    func textViewChanged(for cell: UITableViewCell, textHeight: Double, cursorOffset: Double) {
         UIView.setAnimationsEnabled(false)
         tableView.beginUpdates()
         tableView.endUpdates()
         UIView.setAnimationsEnabled(true)
-    
+        
         let touchPoint = CGPoint(x: cell.frame.origin.x,
                                  y: cell.frame.origin.y + cursorOffset)
+        let availableHeight = tableView.bounds.height - tableView.contentInset.bottom
+        let difference = touchPoint.y - tableView.contentOffset.y
         
-        tableView.beginUpdates()
-        tableView.scrollRectToVisible(CGRect(origin: touchPoint, size: textSize),
-                                      animated: true)
-        tableView.endUpdates()
+        DispatchQueue.main.async {
+            if difference < 0  {
+                self.tableView.contentOffset = touchPoint
+                return
+            }
+            if difference + textHeight >= availableHeight {
+                self.tableView.contentOffset.y += difference + textHeight - availableHeight
+                return
+            }
+        }
     }
 }
 

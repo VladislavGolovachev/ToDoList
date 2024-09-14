@@ -9,7 +9,7 @@ import UIKit
 
 protocol CellDelegateProtocol: AnyObject {
     func textViewChanged(for cell: UITableViewCell, 
-                         textSize: CGSize,
+                         textHeight: Double,
                          cursorOffset: Double)
 
     func reminderChanged(of cell: ToDoTableViewCell, for reminder: String)
@@ -144,6 +144,11 @@ extension ToDoTableViewCell {
     }
     
     func setDescription(_ description: String?) {
+        guard let description, !description.isEmpty else {
+            descriptionTextView.text = DefaultTextConstant.description
+            return
+        }
+        
         descriptionTextView.text = description
     }
     
@@ -152,10 +157,16 @@ extension ToDoTableViewCell {
             setReminderCheckedState(.checked, tellDelegate: true)
             return
         }
+        
         setReminderCheckedState(.unchecked, tellDelegate: true)
     }
     
-    func setDate(_ date: NSAttributedString) {
+    func setDate(_ date: NSAttributedString?) {
+        if date == nil {
+            dateTextField.text = DefaultTextConstant.datePlaceholder
+            return
+        }
+        
         dateTextField.attributedText = date
     }
 }
@@ -258,19 +269,19 @@ extension ToDoTableViewCell {
         ])
     }
     
-    private func getCaretSizeAndCursorOffset(of textView: UITextView) -> (CGSize, Double) {
+    private func getCaretSizeAndCursorOffset(of textView: UITextView) -> (Double, Double) {
         guard let textPosition = textView.selectedTextRange?.start else {
-            return (.zero, 0)
+            return (0, 0)
         }
         let caret = textView.caretRect(for: textPosition)
-        var offset = caret.origin.y + 3
-        offset += MainViewConstants.tableLineSpacing / 2.0 + CellConstants.contentPadding
+        var offset = caret.origin.y
         
+        offset += MainViewConstants.tableLineSpacing / 2.0 + CellConstants.contentPadding
         if textView.tag == TextViewTag.description {
             offset += reminderTextView.bounds.height + CellConstants.VerticalSpacing.afterReminder
         }
         
-        return (caret.size, offset)
+        return (caret.height, offset)
     }
 }
 
@@ -286,9 +297,18 @@ extension ToDoTableViewCell: UITextViewDelegate {
         return true
     }
     
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        if textView.tag == TextViewTag.reminder {
+            return
+        }
+        if textView.text == DefaultTextConstant.description {
+            textView.text = ""
+        }
+    }
+
     func textViewDidChange(_ textView: UITextView) {
-        let (caretSize, cursorOffset) = getCaretSizeAndCursorOffset(of: textView)
-        delegate?.textViewChanged(for: self, textSize: caretSize, cursorOffset: cursorOffset)
+        let (caretHeight, cursorOffset) = getCaretSizeAndCursorOffset(of: textView)
+        delegate?.textViewChanged(for: self, textHeight: caretHeight, cursorOffset: cursorOffset)
     }
     
     func textViewDidEndEditing(_ textView: UITextView) {
@@ -296,7 +316,11 @@ extension ToDoTableViewCell: UITextViewDelegate {
             delegate?.reminderChanged(of: self, for: textView.text)
             return
         }
+        
         delegate?.descriptionChanged(of: self, for: textView.text)
+        if textView.text.isEmpty {
+            textView.text = DefaultTextConstant.description
+        }
     }
 }
 
