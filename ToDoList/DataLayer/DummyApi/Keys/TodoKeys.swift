@@ -8,8 +8,9 @@
 import Foundation
 
 enum TodoKeys: String {
-    case reminder = "reminder"
-    case notes = "notes"
-    case isCompleted = "isCompleted"
-    case date = "date"
+    case reminder       = "reminder"
+    case notes          = "notes"
+    case isCompleted    = "isCompleted"
+    case date           = "date"
+    case creationDate   = "creationDate"
 }

@@ -10,13 +10,22 @@ import UIKit
 final class MainViewController: UIViewController {
     //MARK: Properties
     var presenter: MainViewPresenterProtocol?
-    let tableView = {
+    var currentTodos = [Todo]()
+    var todoCounts = Array(repeating: 0, count: 3)
+    
+    lazy var tableView: UITableView = {
         let tableView = UITableView(frame: CGRectZero, style: .plain)
         tableView.register(ToDoTableViewCell.self,
                            forCellReuseIdentifier: ToDoTableViewCell.reuseIdentifier)
         
-        tableView.backgroundColor = MainViewConstants.backgroundColor
+        tableView.backgroundColor = MainViewConstants.Color.background
         tableView.separatorStyle = .none
+        tableView.contentInsetAdjustmentBehavior = .never
+        
+        tableView.showsVerticalScrollIndicator = false
+        
+        tableView.dataSource = self
+        tableView.delegate = self
         
         return tableView
     }()
@@ -28,9 +37,10 @@ final class MainViewController: UIViewController {
         
         return label
     }()
-    let dateLabel = {
+    lazy var dateLabel: UILabel = {
         let label = UILabel()
-        label.text = "Wednesday, 11 May"
+        
+        label.text = presenter?.currentDate()
         label.font = FontConstants.date
         label.textColor = ColorConstants.Text.date
         
@@ -49,7 +59,8 @@ final class MainViewController: UIViewController {
             .font: FontConstants.buttonTitle,
             .foregroundColor: ColorConstants.interactiveTheme
         ]
-        config.attributedTitle = AttributedString("New Task", attributes: AttributeContainer(attributes))
+        config.attributedTitle = AttributedString("New Task", 
+                                                  attributes: AttributeContainer(attributes))
         config.imagePadding = ButtonConstants.imagePadding
         button.configuration = config
         
@@ -59,15 +70,16 @@ final class MainViewController: UIViewController {
     //MARK: ViewController LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = MainViewConstants.backgroundColor
         
-        segmentedControl.addTarget(self, action: #selector(segmentedControlAction(_:)), for: .valueChanged)
-        newTaskButton.addTarget(self, action: #selector(newTaskButtonAction2(_:)), for: .touchUpInside)
-        newTaskButton.addTarget(self, action: #selector(newTaskButtonAction(_:)), for: .touchDown)
+        UIView.appearance().isExclusiveTouch = true
         
-        tableView.dataSource = self
-        tableView.delegate = self
+        view.backgroundColor = MainViewConstants.Color.background
+        view.isUserInteractionEnabled = false
         
+        presenter?.initialLoading()
+        
+        setActions()
+        setNotifications()
         addSubviews()
         setupConstraints()
     }
@@ -75,17 +87,45 @@ final class MainViewController: UIViewController {
 
 //MARK: Actions
 extension MainViewController {
-    @objc private func segmentedControlAction(_ control: CustomSegmentedControl) {
-        let array = ["1", "20", "99+"]
-        control.setRemindersAmount(array[Int.random(in: 0...2999) / 1000],
-                                   forSegment: control.selectedSegmentIndex)
+    @objc private func keyboardWillShow(_ notification: Notification) {
+        guard let info = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey],
+              let frame = info as? CGRect else {return}
+
+        tableView.contentInset = UIEdgeInsets(top: 0, 
+                                              left: 0,
+                                              bottom: frame.height,
+                                              right: 0)
     }
     
-    @objc private func newTaskButtonAction2(_ button: UIButton) {
-        print("Button tapped")
+    @objc private func keyboardWillHide(_ notification: Notification) {
+        tableView.contentInset = .zero
+    }
+    
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
+    @objc private func segmentedControlAction(_ control: CustomSegmentedControl) {
+        presenter?.fetchTodoList() {
+            self.scrollToTop()
+        }
     }
     
     @objc private func newTaskButtonAction(_ button: UIButton) {
+        scrollToTop()
+        if segmentedControl.selectedSegmentIndex == 2 {
+            segmentedControl.selectedSegmentIndex = 0
+            
+            presenter?.fetchTodoList { [weak self] in
+                self?.presenter?.addNewReminder()
+            }
+            return
+        }
+        
+        presenter?.addNewReminder()
+    }
+    
+    @objc private func newTaskButtonAnimation(_ button: UIButton) {
         UIView.animate(withDuration: 0.1) {
             button.backgroundColor = ColorConstants.buttonBackground.withAlphaComponent(0.3)
             button.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
@@ -98,8 +138,42 @@ extension MainViewController {
     }
 }
 
-//MARK: Private Functions
+//MARK: Private Functions and Computed Properties
 extension MainViewController {
+    private var indexPathZero: IndexPath {
+        IndexPath(row: 0, section: 0)
+    }
+    
+    private func setActions() {
+        let tapGesture = UITapGestureRecognizer(target: self,
+                                         action: #selector(dismissKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGesture)
+        
+        segmentedControl.addTarget(self, 
+                                   action: #selector(segmentedControlAction(_:)),
+                                   for: .valueChanged)
+        newTaskButton.addTarget(self,
+                                action: #selector(newTaskButtonAction(_:)),
+                                for: .touchUpInside)
+        newTaskButton.addTarget(self, 
+                                action: #selector(newTaskButtonAnimation(_:)),
+                                for: .touchDown)
+    }
+    
+    private func setNotifications() {
+        let nc = NotificationCenter.default
+        
+        nc.addObserver(self,
+                       selector: #selector(keyboardWillShow(_:)),
+                       name: UIResponder.keyboardWillShowNotification,
+                       object: nil)
+        nc.addObserver(self, 
+                       selector: #selector(keyboardWillHide(_:)),
+                       name: UIResponder.keyboardWillHideNotification,
+                       object: nil)
+    }
+    
     private func addSubviews() {
         view.addSubview(titleLabel)
         view.addSubview(dateLabel)
@@ -115,6 +189,7 @@ extension MainViewController {
         
         let safeArea = view.safeAreaLayoutGuide
         let padding = MainViewConstants.padding
+        
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: safeArea.topAnchor, 
                                             constant: ViewConstants.upperPadding),
@@ -135,7 +210,7 @@ extension MainViewController {
             segmentedControl.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, 
                                                   constant: ViewConstants.Spacing.common),
             segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: padding),
-            segmentedControl.heightAnchor.constraint(equalToConstant: 20),
+            segmentedControl.heightAnchor.constraint(equalToConstant: ViewConstants.segmentedControlHeight),
             
             tableView.topAnchor.constraint(equalTo: segmentedControl.bottomAnchor, 
                                            constant: ViewConstants.Spacing.common),
@@ -144,54 +219,198 @@ extension MainViewController {
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
     }
+    
+    private func scrollToTop() {
+        if tableView.numberOfRows(inSection: 0) == 0 {
+            return
+        }
+        tableView.scrollToRow(at: indexPathZero, at: .top, animated: false)
+    }
+    
+    private func customizeCell(_ cell: ToDoTableViewCell, at indexPath: IndexPath) {
+        let todo = currentTodos[indexPath.row]
+        
+        cell.setReminder(todo.reminder)
+        cell.setIsCompleted(todo.isCompleted)
+        cell.setDescription(todo.notes)
+        
+        guard let date = todo.date else {return}
+        let dateString = presenter?.attributedString(from: date)
+        cell.setDate(dateString)
+    }
 }
 
 //MARK: UITableViewDataSource
 extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        20
+        return currentTodos.count
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, 
+                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let identifier = ToDoTableViewCell.reuseIdentifier
         let cell = tableView.dequeueReusableCell(withIdentifier: identifier,
                                                  for: indexPath)
         as? ToDoTableViewCell ?? ToDoTableViewCell()
         
-        cell.cellDelegate = self
+        customizeCell(cell, at: indexPath)
         
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, 
+                   commit editingStyle: UITableViewCell.EditingStyle,
+                   forRowAt indexPath: IndexPath) {
+        presenter?.deleteReminder(for: indexPath.row)
     }
 }
 
 //MARK: UITableViewDelegate
 extension MainViewController: UITableViewDelegate {
     
+    func tableView(_ tableView: UITableView,
+                   didEndDisplaying cell: UITableViewCell, 
+                   forRowAt indexPath: IndexPath) {
+        let cell = cell as? ToDoTableViewCell
+        cell?.delegate = nil
+    }
+    
+    func tableView(_ tableView: UITableView, 
+                   willDisplay cell: UITableViewCell,
+                   forRowAt indexPath: IndexPath) {
+        let cell = cell as? ToDoTableViewCell
+        cell?.delegate = self
+    }
 }
 
 //MARK: MainViewProtocol
 extension MainViewController: MainViewProtocol {
+    var selectedIndexOfSegmentedControl: Int {
+        return segmentedControl.selectedSegmentIndex
+    }
+    var currentReminders: [Todo] {
+        get {
+            currentTodos
+        }
+        set {
+            currentTodos = newValue
+        }
+    }
+    var reminderCounts: [Int] {
+        get {
+            todoCounts
+        }
+        set {
+            todoCounts = newValue
+        }
+    }
     
+    func reload() {
+        tableView.reloadData()
+        view.isUserInteractionEnabled = true
+    }
+    
+    func reloadRow(at indexPath: IndexPath, isAnimationNeeded: Bool) {
+        let animation: UITableView.RowAnimation
+        animation = (isAnimationNeeded ? .fade : .none)
+        
+        tableView.reloadRows(at: [indexPath], with: animation)
+    }
+    
+    func reloadSegmentedControl() {
+        for i in 0...2 {
+            segmentedControl.setRemindersAmount(String(todoCounts[i]), forSegment: i)
+        }
+    }
+    
+    func animateCellAdding() {
+        tableView.beginUpdates()
+        tableView.insertRows(at: [indexPathZero], with: .top)
+        tableView.endUpdates()
+    }
+    
+    func animateCheckboxHit(at indexPath: IndexPath) {
+        switch segmentedControl.selectedSegmentIndex {
+        case 1:
+            tableView.deleteRows(at: [indexPath], with: .right)
+        case 2:
+            tableView.deleteRows(at: [indexPath], with: .left)
+        default:
+            return
+        }
+    }
+    
+    func animateCellDeleting(at indexPath: IndexPath) {
+        tableView.beginUpdates()
+        tableView.deleteRows(at: [indexPath], with: .left)
+        tableView.endUpdates()
+    }
 }
 
 //MARK: CellDelegateProtocol
 extension MainViewController: CellDelegateProtocol {
-    func updateHeightOfRow(cell: UITableViewCell) {
+    func reminderChanged(of cell: ToDoTableViewCell, for reminder: String) {
+        guard let index = tableView.indexPath(for: cell)?.row else {return}
+        presenter?.updateReminder(for: index, for: .reminder, with: reminder)
+    }
+    
+    func descriptionChanged(of cell: ToDoTableViewCell, for description: String) {
+        guard let index = tableView.indexPath(for: cell)?.row else {return}
+        presenter?.updateReminder(for: index, for: .notes, with: description)
+    }
+    
+    func dateNeedsUpdate(of cell: ToDoTableViewCell, for date: Date) {
+        guard let index = tableView.indexPath(for: cell)?.row,
+              let presenter else {return}
+        
+        let dateString = presenter.attributedString(from: date)
+        cell.setDate(dateString)
+        
+        presenter.updateReminder(for: index, for: .date, with: date)
+    }
+    
+    func checkboxStateChanged(of cell: ToDoTableViewCell, 
+                              forCheckedState checkboxState: Bool) {
+        guard let index = tableView.indexPath(for: cell)?.row else {return}
+        presenter?.updateReminder(for: index, for: .isCompleted, with: checkboxState)
+    }
+    
+    func textViewChanged(for cell: UITableViewCell, textHeight: Double, cursorOffset: Double) {
         UIView.setAnimationsEnabled(false)
         tableView.beginUpdates()
         tableView.endUpdates()
         UIView.setAnimationsEnabled(true)
+        
+        let touchPoint = CGPoint(x: cell.frame.origin.x,
+                                 y: cell.frame.origin.y + cursorOffset)
+        let availableHeight = tableView.bounds.height - tableView.contentInset.bottom
+        let difference = touchPoint.y - tableView.contentOffset.y
+        
+        DispatchQueue.main.async {
+            if difference < 0  {
+                self.tableView.contentOffset = touchPoint
+                return
+            }
+            if difference + textHeight >= availableHeight {
+                self.tableView.contentOffset.y += difference + textHeight - availableHeight
+                return
+            }
+        }
     }
 }
 
 //MARK: Local Constants
 extension MainViewController {
-    
     private enum ViewConstants {
-        static let upperPadding = 10.0
+        static let segmentedControlHeight: Double = 20
+        static let upperPadding: Double = 10
         enum Spacing {
-            static let common = 20.0
-            static let afterTitle = 2.0
+            static let common: Double = 20
+            static let afterTitle: Double = 2
         }
     }
     
@@ -206,16 +425,16 @@ extension MainViewController {
     }
     
     private enum FontConstants {
-        static let title = UIFont.systemFont(ofSize: 28.0, weight: .bold)
-        static let date = UIFont.systemFont(ofSize: 14.0, weight: .medium)
-        static let buttonTitle = UIFont.systemFont(ofSize: 14.0, weight: .semibold)
+        static let title        = UIFont.systemFont(ofSize: 28, weight: .bold)
+        static let date         = UIFont.systemFont(ofSize: 14, weight: .medium)
+        static let buttonTitle  = UIFont.systemFont(ofSize: 14, weight: .semibold)
     }
     
     private enum ButtonConstants {
-        static let cornerRadius = 12.0
+        static let cornerRadius: Double = 12
         static let imageName = "Plus"
-        static let imagePadding = 5.0
-        static let width = 130.0
-        static let height = 40.0
+        static let imagePadding: Double = 5
+        static let width: Double = 130
+        static let height: Double = 40
     }
 }

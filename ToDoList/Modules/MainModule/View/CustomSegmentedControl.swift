@@ -8,6 +8,7 @@
 import UIKit
 
 final class CustomSegmentedControl: UISegmentedControl {
+    //MARK: Properties
     private lazy var segmentLabels = {
         var array = [UILabel]()
         for index in 0...2 {
@@ -16,12 +17,11 @@ final class CustomSegmentedControl: UISegmentedControl {
         return array
     }()
     
+    //MARK: Inits
     init() {
         super.init(frame: CGRectZero)
         
-        addTarget(self, action: #selector(changeColorAction(_:)), for: .valueChanged)
-        
-        backgroundColor = MainViewConstants.backgroundColor
+        backgroundColor = MainViewConstants.Color.background
         setTitleTextAttributes([.foregroundColor: ColorConstants.notSelected, .font: SegmentConstants.font],
                                 for: .normal)
         setTitleTextAttributes([.foregroundColor: ColorConstants.selected, .font: SegmentConstants.font],
@@ -43,23 +43,28 @@ final class CustomSegmentedControl: UISegmentedControl {
         super.init(coder: coder)
     }
     
+    override func didChangeValue(forKey key: String) {
+        super.didChangeValue(forKey: key)
+        reselectSegment()
+    }
+}
+
+//MARK: Public Functions
+extension CustomSegmentedControl {
     func setRemindersAmount(_ amount: String, forSegment index: Int) {
         segmentLabels[index].text = amount
     }
 }
 
-//MARK: Actions
+//MARK: Private Functions
 extension CustomSegmentedControl {
-    @objc private func changeColorAction(_ control: UISegmentedControl) {
+    private func reselectSegment() {
         segmentLabels.forEach {
             $0.backgroundColor = ColorConstants.notSelected
         }
-        segmentLabels[control.selectedSegmentIndex].backgroundColor = ColorConstants.selected
+        segmentLabels[selectedSegmentIndex].backgroundColor = ColorConstants.selected
     }
-}
-
-//MARK: Private Functions
-extension CustomSegmentedControl {
+    
     private func addSubviews() {
         for label in segmentLabels {
             addSubview(label)
@@ -71,15 +76,19 @@ extension CustomSegmentedControl {
             label.translatesAutoresizingMaskIntoConstraints = false
             
             let constant = labelLeadingConstant(forSegment: index)
-            label.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: constant).isActive = true
+            NSLayoutConstraint.activate([
+                label.centerYAnchor.constraint(equalTo: centerYAnchor),
+                label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: constant)
+            ])
         }
     }
     
     private func constructLabel(forSegment index: Int) -> UILabel {
         let padding = SegmentConstants.Label.contentPadding
-        let label = PaddingLabel(top: 0, left: padding,
-                                 bottom: 0, right: padding)
+        let label = PaddingLabel(top: 0, 
+                                 left: padding,
+                                 bottom: 0,
+                                 right: padding)
 
         label.layer.cornerRadius = SegmentConstants.Label.cornerRadius
         label.layer.masksToBounds = true
@@ -91,7 +100,6 @@ extension CustomSegmentedControl {
             label.backgroundColor = ColorConstants.notSelected
         }
         
-        label.text = "99+"
         label.font = SegmentConstants.font
         label.textColor = ColorConstants.segmentLabelText
         
@@ -116,7 +124,7 @@ extension CustomSegmentedControl {
     }
     
     private func setBackgroundAndDividerImages() {
-        let blankImage = UIImage.filled(with: MainViewConstants.backgroundColor)
+        let blankImage = UIImage.filled(with: MainViewConstants.Color.background)
         let separatorImage = UIImage.filled(with: ColorConstants.notSelected)
         
         setBackgroundImage(blankImage, for: .normal, barMetrics: .default)

@@ -8,68 +8,30 @@
 import Foundation
 import CoreData
 
-final class TodoManager: CoreDataStorageManager {
+protocol TodoManagerProtocol: CoreDataStorageManager {
+    func count(ofObjectsWithKeyedValues: [String: Any]?) throws -> Int
+}
+
+//MARK: CoreDataStorageManager
+final class TodoManager: TodoManagerProtocol {
     typealias KeyType = Int
     typealias ObjectType = TodoEntity
     
     private let storage = DummyApiStorage()
     
-    func fetch(for index: Int) throws -> TodoEntity {
-        let todos = try fetchAll()
-        return todos[index]
-    }
-    
-    func persist(with keyedValues: [String: Any]) throws {
-        if let error = storage.loadingError {
-            throw error
-        }
-        
-        try storage.backgroundContext.performAndWait { [weak self] in
-            guard let notOptionalSelf = self,
-                  let entity = NSEntityDescription.entity(forEntityName: "TodoEntity",
-                                                          in: notOptionalSelf.storage.backgroundContext) else {return}
-            entity.setValuesForKeys(keyedValues)
-            
-            try self?.saveContext()
-        }
-    }
-    
-    func update(for index: Int, with keyedValues: [String: Any]) throws {
-        try storage.backgroundContext.performAndWait { [weak self] in
-            let todo = try self?.fetch(for: index)
-            todo?.setValuesForKeys(keyedValues)
-            
-            try self?.saveContext()
-        }
-    }
-    
-    func delete(for index: Int) throws {
-        try storage.backgroundContext.performAndWait { [weak self] in
-            if let todo = try self?.fetch(for: index) {
-                self?.storage.backgroundContext.delete(todo)
-                
-                try self?.saveContext()
-            }
-        }
-    }
-    
-    func count() throws -> Int {
-        let todos = try fetchAll()
-        return todos.count
-    }
-}
-
-extension TodoManager {
-    private func fetchAll() throws -> [TodoEntity] {
-        if let error = storage.loadingError {
-            throw error
-        }
-        
-        let request = request()
+    func fetch(amongObjectsWithKeyedValues keyedValues: [String : Any]?) throws -> [TodoEntity] {
         var todos: [TodoEntity]?
         try storage.backgroundContext.performAndWait { [weak self] in
+            guard let strongSelf = self else {
+                throw StorageError.unknown
+            }
+            if let error = strongSelf.storage.loadingError {
+                throw error
+            }
+            
+            let request = strongSelf.request(isSortNeeded: true, predicateKeyedValues: keyedValues)
             do {
-                todos = try self?.storage.backgroundContext.fetch(request)
+                todos = try strongSelf.storage.backgroundContext.fetch(request)
             } catch {
                 throw StorageError.fetchingFailed
             }
@@ -81,11 +43,80 @@ extension TodoManager {
         throw StorageError.missingObject
     }
     
-    private func request() -> NSFetchRequest<TodoEntity> {
-        let sortDescriptor = NSSortDescriptor(key: "date", ascending: false)
+    func update(for index: Int, 
+                amongObjectsWithKeyedValues searchingKeyedValues: [String : Any]?,
+                with newKeyedValues: [String : Any]) throws {
         
+        try storage.backgroundContext.performAndWait { [weak self] in
+            let todos = try self?.fetch(amongObjectsWithKeyedValues: searchingKeyedValues)
+            todos?[index].setValuesForKeys(newKeyedValues)
+            
+            try self?.saveContext()
+        }
+    }
+    
+    func persist(with keyedValues: [String: Any]) throws {
+        try storage.backgroundContext.performAndWait { [weak self] in
+            if let error = self?.storage.loadingError {
+                throw error
+            }
+            guard let context = self?.storage.backgroundContext,
+                  let entity = NSEntityDescription.entity(forEntityName: "TodoEntity",
+                                                          in: context) else {return}
+            
+            let object = NSManagedObject(entity: entity, insertInto: context)
+            object.setValuesForKeys(keyedValues)
+            
+            try self?.saveContext()
+        }
+    }
+    
+    func delete(for index: Int, amongObjectsWithKeyedValues keyedValues: [String : Any]?) throws {
+        try storage.backgroundContext.performAndWait { [weak self] in
+            guard let strongSelf = self else {
+                throw StorageError.unknown
+            }
+            let todos = try strongSelf.fetch(amongObjectsWithKeyedValues: keyedValues)
+            
+            strongSelf.storage.backgroundContext.delete(todos[index])
+            try strongSelf.saveContext()
+        }
+    }
+    func count(ofObjectsWithKeyedValues keyedValues: [String: Any]?) throws -> Int {
+        var count = 0
+        try storage.backgroundContext.performAndWait {
+            let request = request(isSortNeeded: false, predicateKeyedValues: keyedValues)
+            
+            do {
+                count = try storage.backgroundContext.count(for: request)
+            } catch {
+                throw StorageError.fetchingFailed
+            }
+        }
+        
+        return count
+    }
+}
+
+//MARK: Private Functions
+extension TodoManager {
+    private func request(isSortNeeded: Bool, predicateKeyedValues keyedValues: [String: Any]?) -> NSFetchRequest<TodoEntity> {
         let request = TodoEntity.fetchRequest()
-        request.sortDescriptors = [sortDescriptor]
+        
+        if isSortNeeded {
+            let sortDescriptor1 = NSSortDescriptor(key: TodoKeys.isCompleted.rawValue,
+                                                   ascending: true)
+            let sortDescriptor2 = NSSortDescriptor(key: TodoKeys.creationDate.rawValue,
+                                                   ascending: false)
+            request.sortDescriptors = [sortDescriptor1, sortDescriptor2]
+        }
+        
+        let key = TodoKeys.isCompleted.rawValue
+        if let value = keyedValues?[key] as? Bool {
+            let nsNumber = NSNumber(value: value)
+            let predicate = NSPredicate(format: "\(key) == %@", nsNumber)
+            request.predicate = predicate
+        }
         
         return request
     }
@@ -98,14 +129,5 @@ extension TodoManager {
                 throw StorageError.unableToSaveData
             }
         }
-    }
-}
-
-extension TodoManager {
-    enum TodoKeys: String{
-        case reminder = "reminder"
-        case notes = "notes"
-        case isCompleted = "isCompleted"
-        case date = "date"
     }
 }

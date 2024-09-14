@@ -8,13 +8,17 @@
 import Foundation
 
 protocol DataManagerProtocol {
-    func fetchTodo(for index: Int) throws -> TodoEntity
-    func updateTodo(for index: Int, with keyedValues: [TodoKeys: Any]) throws
-    func deleteTodo(for index: Int) throws
-    func getTodosCount() throws -> Int
-    
-    func saveTodos(_: [DummyTodo], date: Date) throws
     var isFirstLaunch: Bool {get}
+    
+    func fetchTodos(amongReminders: ReminderState) throws -> [TodoEntity]
+    func saveTodo(with keyedValues: [TodoKeys: Any]) throws
+    func deleteTodo(for index: Int, amongReminders: ReminderState) throws
+    func updateTodo(for index: Int, 
+                    amongReminders: ReminderState,
+                    with keyedValues: [TodoKeys: Any]) throws
+    
+    func getTodosCounts() throws -> [Int]
+    func saveTodos(by keyedValuesArray: [[TodoKeys: Any]]) throws
 }
 
 final class DataManager: DataManagerProtocol {
@@ -28,40 +32,65 @@ final class DataManager: DataManagerProtocol {
         return !isNotFirstLaunch
     }
     
-    func fetchTodo(for index: Int) throws -> TodoEntity {
-        let todo = try todoManager.fetch(for: index)
-        return todo
+    func fetchTodos(amongReminders state: ReminderState) throws -> [TodoEntity] {
+        let dict = dictionary(ofReminderState: state)
+        let todos = try todoManager.fetch(amongObjectsWithKeyedValues: dict)
+        
+        return todos
     }
     
-    func updateTodo(for index: Int, with keyedValues: [TodoKeys: Any]) throws {
+    func saveTodo(with keyedValues: [TodoKeys: Any]) throws {
+        try todoManager.persist(with: converted(keyedValues))
+    }
+    
+    func updateTodo(for index: Int, amongReminders state: ReminderState, 
+                    with keyedValues: [TodoKeys: Any]) throws {
+        let dict = dictionary(ofReminderState: state)
         try todoManager.update(for: index,
+                               amongObjectsWithKeyedValues: dict,
                                with: converted(keyedValues))
     }
     
-    func deleteTodo(for index: Int) throws {
-        try todoManager.delete(for: index)
+    func deleteTodo(for index: Int, amongReminders state: ReminderState) throws {
+        let dict = dictionary(ofReminderState: state)
+        try todoManager.delete(for: index, amongObjectsWithKeyedValues: dict)
     }
     
-    func getTodosCount() throws -> Int {
-        let count = try todoManager.count()
+    func getTodosCounts() throws -> [Int] {
+        var counts = Array(repeating: 0, count: 3)
         
-        return count
+        let dict1 = dictionary(ofReminderState: .notCompleted)
+        let dict2 = dictionary(ofReminderState: .completed)
+        
+        counts[1] = try todoManager.count(ofObjectsWithKeyedValues: dict1)
+        counts[2] = try todoManager.count(ofObjectsWithKeyedValues: dict2)
+        counts[0] = counts[1] + counts[2]
+        
+        return counts
     }
     
-    func saveTodos(_ todos: [DummyTodo], date: Date) throws {
-        for todo in todos {
-            let keyedValues: [TodoKeys: Any] = [
-                .reminder:      todo.reminder,
-                .isCompleted:   todo.isCompleted,
-                .date:          date
-            ]
-            try todoManager.persist(with: converted(keyedValues))
+    func saveTodos(by keyedValuesArray: [[TodoKeys: Any]]) throws {
+        for keyedValues in keyedValuesArray {
+            try saveTodo(with: keyedValues)
         }
     }
 }
 
 //MARK: Private Things
 extension DataManager {
+    private func dictionary(ofReminderState reminderState: ReminderState) -> [String: Bool]? {
+        let key = TodoKeys.isCompleted.rawValue
+        
+        switch reminderState {
+        case .completed:
+            return [key: true]
+        case .notCompleted:
+            return [key: false]
+        default:
+            return nil
+        }
+    }
+    
     private func converted(_ keyedValues: [TodoKeys: Any]) -> [String: Any] {
         var dictionary: [String: Any] = [:]
         for (key, value) in keyedValues {
